@@ -9,7 +9,6 @@ pipelines:
     - step:
         script: # Modify the commands below to build your repository.
           # Trick to access other repos
-          # - pip install -r requirements-test.txt
+          - pip install -r requirements-test.txt
           - python setup.py install
-          - pip install pytest
           - CI_BUILD=True python test.py
