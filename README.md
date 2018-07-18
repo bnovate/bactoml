@@ -1,4 +1,4 @@
-# Bactoml - Bactosense Machine Learning libraries
+# BactoML - Bactosense Machine Learning libraries
 
 * Eliane Roosli, Ilaria Ricchi, Douglas Watson
 * bNovate SA, 2018
