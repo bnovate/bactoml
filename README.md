@@ -5,41 +5,60 @@
 
 ## Overview
 
-...
+This python package contains all of our custom machine learning tools. They are built for maximum interoperability with Scikit-learn, so the APIs should be familiar to most. We provide several modules related to fingerprinting:
 
-### Further documentation
-
-... Describe Sphinx docs ...
+- *Data loading*: loading of FCS files
+- *Data generation*: generation of FCS files with artificial contaminations
+- *Pre-processing*: tlog transforms, gating to remove noise
+- *Fingerprinting*: gating to count cells, probability binning
+- *Estimators*: Chi-square risk score estimator.
 
 ## Getting started
 
 Install the package with:
 
 ```
+pip install -r requirements.txt
 python setup.py install
 ```
 
 Then work through the examples in the `examples/` folder.
 
-For developers:
+For developers: I recommend working in a virtual environment or Anaconda environment. Install the library in development mode in your virtualenv:
 
 ```
+pip install -r requirements-test.txt
 python setup.py install
 python setup.py develop
 ```
 
-I recommend working in a virtual environment or Anaconda environment.
+Then create a branch and hack away. 
 
-## Testing
+### Testing
 
-Tests use py.test. Install py.test:
+Tests use pytest. Install py.test:
 
 ```
-pip install py.test
+pip install pytest
 ```
 
 And run:
 
 ```
-py.test
+pytest
 ```
+
+### Further documentation
+
+Documentation is in the docs/ folder, and is managed by sphinx. To build the documentation, make sure you have installed the developer requirements, then:
+
+```
+cd docs/
+make html
+```
+
+The output is in `docs/html/_build/index.html`
+
+## Contribution guidelines
+
+See CONTRIBUTING.md.
