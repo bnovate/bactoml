@@ -37,13 +37,11 @@ Then create a branch and hack away.
 ### Testing
 
 Tests use pytest. Install py.test:
-
 ```
 pip install pytest
 ```
 
 And run:
-
 ```
 pytest
 ```
@@ -51,13 +49,18 @@ pytest
 ### Further documentation
 
 Documentation is in the docs/ folder, and is managed by sphinx. To build the documentation, make sure you have installed the developer requirements, then:
-
 ```
 cd docs/
 make html
 ```
 
 The output is in `docs/html/_build/index.html`
+
+Document your code in numpydoc format. When working on the sphinx rst files, you may find it useful to automatically build the docs every time you save a file:
+```
+./scripts/auto_build_doc
+```
+
 
 ## Contribution guidelines
 

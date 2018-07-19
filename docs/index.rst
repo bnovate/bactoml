@@ -10,6 +10,9 @@ Welcome to BactoML's documentation!
    :maxdepth: 2
    :caption: Contents:
    
+   loading
+   preprocessing
+   fingerprinting
    api
 
 

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# Automatically rebuild documentation when changed.
+# Requires watchodg: pip install watchdog argcomplete
+
+basedir=`dirname ${BASH_SOURCE[0]}`
+
+cd $basedir/../docs/
+watchmedo shell-command \
+        --patterns="*.rst" \
+        --ignore-patterns='_build/*' \
+        --recursive \
+        --command='make html'
+
+
+cd -
