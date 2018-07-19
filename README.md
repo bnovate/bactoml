@@ -7,11 +7,11 @@
 
 This python package contains all of our custom machine learning tools. They are built for maximum interoperability with Scikit-learn, so the APIs should be familiar to most. We provide several modules related to fingerprinting:
 
-- *Data loading*: loading of FCS files
-- *Data generation*: generation of FCS files with artificial contaminations
-- *Pre-processing*: tlog transforms, gating to remove noise
-- *Fingerprinting*: gating to count cells, probability binning
-- *Estimators*: Chi-square risk score estimator.
+- **Data loading**: loading of FCS files
+- **Data generation**: generation of FCS files with artificial contaminations
+- **Pre-processing**: tlog transforms, gating to remove noise
+- **Fingerprinting**: gating to count cells, probability binning
+- **Estimators**: Chi-square risk score estimator.
 
 ## Getting started
 
