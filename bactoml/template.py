@@ -1,5 +1,15 @@
+#!/usr/bin/env python
+# -*- coding: UTF8 -*-
 """
-This is a module to be used as a reference for building other modules
+bactoml.template
+================
+
+Template for sci-kit learn compatible classes. Taken from scikit-learn.
+
+:author: Douglas Watson <douglas.watson@bnovate.com>
+:date: 2018
+:license: Private code, see LICENSE for more information
+
 """
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin, TransformerMixin

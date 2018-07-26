@@ -1,5 +1,6 @@
 API reference
 =============
 
-.. automodule:: bactoml.template
+.. automodule:: bactoml.dataset
     :members:
+

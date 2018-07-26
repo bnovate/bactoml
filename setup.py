@@ -42,6 +42,7 @@ setup(
     install_requires=[
         'numpy',
         'sklearn',
+        'FlowCytometryTools',
     ],
     scripts=[
         # 'scripts/example',

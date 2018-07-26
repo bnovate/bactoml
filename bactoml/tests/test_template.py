@@ -14,8 +14,9 @@ Tests follow the py.tests pattern.
 
 """
 
-import numpy as np
 import pytest
+
+import numpy as np
 
 from sklearn.utils.estimator_checks import check_estimator
 
@@ -48,7 +49,7 @@ class TestTemplateTransformer(object):
         assert list(transf) == [1, 2, 3]
 
 
-class TestEstimatorTemplate(object):
+class TestTemplateEstimator(object):
 
     def test_estimator_validity(self):
         """ TemplateEstimator needs to be a valid sklearn object """
