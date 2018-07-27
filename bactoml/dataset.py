@@ -7,6 +7,9 @@ bactoml.dataset
 
 Representations of data observations and datasets
 
+Reference for how data sets should be represented:
+http://scikit-learn.org/stable/tutorial/basic/tutorial.html#loading-an-example-dataset
+
 :author: Douglas Watson <douglas.watson@bnovate.com>
 :date: 2018
 :license: Private code, see LICENSE for more information
@@ -14,6 +17,8 @@ Representations of data observations and datasets
 """
 
 import datetime
+import numpy as np
+from typing import Iterable
 from FlowCytometryTools.core.containers import FCMeasurement
 
 class FCObservation(FCMeasurement):
@@ -77,7 +82,10 @@ class FCDataSet(object):
 
     Parameters
     ----------
-    observations : list of FCObservations
+    observations : array of FCObservations
+
+        Vertical array with one observation per *line*, following sklearn
+        standards.
 
     labels : list of str, list of bool, list of float...
 
@@ -96,27 +104,31 @@ class FCDataSet(object):
     
     """
 
-    def __init__(self, observations: list, labels: list=None):
-        self.observations = observations
+    def __init__(self, observations: Iterable, labels: Iterable=None):
+        #: sklearn compliant representation:
+        self.data = np.array(observations).reshape(-1, 1) 
         self.labels = labels
 
     @classmethod
-    def from_paths(cls, paths: list):
+    def from_paths(cls, paths: Iterable[str], labels=None):
         """ Load dataset from a folder. 
 
         Parameters
         ----------
         paths : list of str
 
+        labels : list of str, optional
+            labels sorted in the same order as paths
+
         Examples
         --------
 
-        >>> paths = glob.glob("*/*.fcs")
+        >>> paths = sorted(glob.glob("*/*.fcs"))
         >>> dataset = FCDataSet.from_paths(paths)
         
         """
         obs = [FCObservation(p) for p in paths]
-        return FCDataSet(obs)
+        return FCDataSet(obs, labels)
 
     def plot_timeseries(self):
         """ Show TCC / HNA over time """

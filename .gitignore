@@ -11,3 +11,4 @@ env/
 docs/_build
 
 test-reports/
+scratch/

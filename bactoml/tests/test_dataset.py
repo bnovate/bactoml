@@ -17,19 +17,10 @@ import glob
 import pytest
 import numpy as np
 
+from test_fixtures import fcs_path, locle_dir
+
 from bactoml.dataset import FCObservation, FCDataSet
 
-BASEDIR = os.path.abspath(os.path.dirname(__file__))
-DATADIR = os.path.join(BASEDIR, os.path.pardir, 'testdata')
-
-@pytest.fixture
-def fcs_path():
-    return os.path.join(DATADIR, "locle", 
-        "20170531-145801 Cte8 31_05_2017 wac 30%", "20170531-145801_events.fcs")
-
-@pytest.fixture
-def locle_dir():
-    return os.path.join(DATADIR, "locle")
 
 class TestFCMObservation(object):
 
@@ -51,3 +42,4 @@ class TestFCMDataSet(object):
 
         assert len(ds.observations) == 10
         assert ds.observations[5].datetime.hour == 0  # CEST!
+        assert list(ds.data.shape) == [10, 1]
