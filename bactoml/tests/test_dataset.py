@@ -40,6 +40,8 @@ class TestFCMDataSet(object):
         )
         ds = FCDataSet.from_paths(sorted(paths))
 
-        assert len(ds.observations) == 10
-        assert ds.observations[5].datetime.hour == 0  # CEST!
+        assert ds.data[5, 0].datetime.hour == 0  # CEST!
         assert list(ds.data.shape) == [10, 1]
+
+        assert len(ds.observations) == 10
+        assert ds.observations[5].datetime.hour == 0

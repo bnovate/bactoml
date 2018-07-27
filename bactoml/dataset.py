@@ -130,6 +130,14 @@ class FCDataSet(object):
         obs = [FCObservation(p) for p in paths]
         return FCDataSet(obs, labels)
 
+    @property
+    def observations(self):
+        """ Provides a flat view of self.data 
+        
+        Instead of looking up data[i, 1], look up observations[i]
+        """
+        return self.data.flatten()
+
     def plot_timeseries(self):
         """ Show TCC / HNA over time """
         pass
