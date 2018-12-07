@@ -1,59 +1,14 @@
+"""
+This module implements decision tree classifier used to cluster
+FCS event in cluster of same sizes (approximatively same size 
+in case of histograms).
+
+"""
 import numpy as np 
 import pandas as pd
-import matplotlib.pyplot as plt
+
 from sklearn.base import BaseEstimator, TransformerMixin, ClusterMixin
-from sklearn.decomposition import PCA
-from itertools import repeat, chain
-
-class PCATransform(PCA):
-    """Apply PCA on the data.
-    """
-
-    def __init__(self,columns=None, n_components=None, copy=True, whiten=False, svd_solver='auto', 
-                 tol=0.0, iterated_power='auto', random_state=None):
-        """
-        Parameters:
-        -----------
-        Same parameters as the PCA class of sk-learn (see documentation).
-
-        """
-        super().__init__(n_components=n_components, copy=copy, whiten=whiten, svd_solver=svd_solver, 
-                         tol=tol, iterated_power=iterated_power, random_state=random_state)
-        self.columns = columns
-
-    def fit(self, X, y=None):
-        """Find the principal axes.
-
-        """
-        if self.columns:
-            super().fit(X[self.columns].values, y)
-        else:
-            super().fit(X.values, y)
-        
-        return self
-
-    def fit_transform(self, X, y=None):
-        """Find the principal axes and apply dimensionality reduction on X.
-
-        """
-        col = ["PC{}".format(i) for i in np.arange(1, self.n_components+1)]
-
-        if self.columns:
-            return pd.DataFrame(super().fit_transform(X[self.columns].values, y), columns=col)
-        else:
-            return pd.DataFrame(super().fit(X.values, y), columns=col)
-        
-    def transform(self, X, y=None):
-        """Apply dimensionality reduction on X.
-
-        """
-        col = ["PC{}".format(i) for i in np.arange(1, self.n_components+1)]
-
-        if self.columns:
-            return pd.DataFrame(super().transform(X[self.columns].values), columns=col)
-        else:
-            return pd.DataFrame(super().transform(X.values), columns=col)
-
+from itertools import repeat
 
 class HistogramTransform(BaseEstimator, TransformerMixin):
     """Apply an histogram transform to the data.
@@ -384,63 +339,5 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
         for i in np.arange(1, len(fcms)):
             self.ewma['counts'] += hist.transform(preprocessing.transform(fcms[i]))['counts']
         
-        self.ewma['counts'] /= N        
+        self.ewma['counts'] /= N
 
-#---------------------------------------------------------------------------------------------------#
-#---------------------------------------TEST & EXAMPLE----------------------------------------------#
-#---------------------------------------------------------------------------------------------------#
-
-
-if __name__ == '__main__':
-
-    from sklearn.pipeline import Pipeline
-    from sklearn.decomposition import PCA
-    from FCT_transforms import FCTFunction
-    from FlowCytometryTools import FCMeasurement, PolyGate
-    from matplotlib import colors
-    
-    def histogram_pipeline(measurement1, measurement2, TCC_gate, max_depth):
-        """Fit the decsion tree on measurment1, then clusters on measument2
-
-        Parameters:
-        -----------
-        measurment1, measurment2 : FCMeasurement objects.
-
-        TCC_gate : FlowCytometryTools gate.
-
-        max_depth : int
-                    Maximal depth of the decision tree. The number of
-                    cluster is given by 2**max_depth
-        """
-
-        pipe = Pipeline([('tlog', FCTFunction(lambda X : X.transform('tlog', 
-                                                                    channels=['FL1', 'FL2', 'SSC'], 
-                                                                    th=1, r=1, d=1, auto_range=False))),
-                        ('TCC_gate', FCTFunction(lambda X : X.gate(TCC_gate))),
-                        ('clustering', DTClassifier(max_depth=2, columns=['SSC', 'FL1', 'FL2']))])
-        pipe.fit(measurement1)
-        pipe.predict(measurement1)
-        
-        pipe = Pipeline([('tlog', FCTFunction(lambda X : X.transform('tlog', 
-                                                                    channels=['FL1', 'FL2', 'SSC'], 
-                                                                    th=1, r=1, d=1, auto_range=False))),
-                        ('TCC_gate', FCTFunction(lambda X : X.gate(TCC_gate))),
-                        ('histogram', HistogramTransform(edges={'PC1':np.linspace(-2.9, 3, 100), 
-                                                                 'PC2':np.linspace(-1.3, 1.8, 100)})),
-                        ('clustering', DTClassifier(max_depth=2, columns=['PC1', 'PC2']))])
-
-        pipe.fit(measurement1)
-        
-        return pipe.transform(measurement2)
-        
-
-    
-    #TCC gate
-    TCC_GATE = PolyGate([[3.7, 0], [3.7, 3.7], [6.5, 6], [6.5, 0]], ['FL1', 'FL2']) 
-
-    #create and fit an histogram Cluster
-    measurement = FCMeasurement(ID='Locle: test clustering', datafile='20170529-155903 Cte8 20_04_2017 nouveau gate/20170529-155903_events.fcs')
-
-    histogram_pipeline(measurement, measurement, TCC_GATE, 3)
-
-    plt.show()

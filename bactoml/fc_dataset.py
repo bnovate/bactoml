@@ -1,3 +1,8 @@
+"""
+This module implements a class representing a dataset of FCS files.
+The FCDataset is compatible sklearn Pipelines using ..........
+
+"""
 import pandas as pd 
 
 from collections.abc import MutableSequence
@@ -185,7 +190,7 @@ if __name__ == '__main__':
     from itertools import count
     from pandas.plotting import scatter_matrix
 
-    from df_pipeline import DFLambdaFunction, DFInPlaceLambda,  DFFeatureUnion, SequentialPipeline
+    from df_pipeline import DFLambdaFunction, DFInPlaceLambda,  DFFeatureUnion, SampleWise
     from decision_tree_classifier import DTClassifier, HistogramTransform
 
 
@@ -221,7 +226,7 @@ if __name__ == '__main__':
                        ('clustering', dt)])
 
     #pre-preocessing pipeline
-    pp_pipe = SequentialPipeline([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
+    pp_pipe = SampleWise([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
                                                                                    channels=['FL1', 'FL2', 'SSC'], 
                                                                                    th=1, r=1, d=1, auto_range=False))),
                                   ('TCC_gate', DFLambdaFunction(lambda X : X.gate(TCC_GATE))),
@@ -235,19 +240,3 @@ if __name__ == '__main__':
                            ('standardization', DFLambdaFunction(StandardScaler()))])
 
     output = super_pipe.fit_transform(fcds)
-        
-    print('-' * 100)
-    print(output.head())
-    print('-' * 100)
-    print(output.describe())
-    print('-' * 100)
-
-    fig, axis = plt.subplots(1, 1)
-    for i, x in enumerate(output.values.T):
-        x -= np.min(x)
-        x /= np.max(x)
-
-        axis.plot(x + i * 1.1, label=output.columns[i])
-    plt.legend()
-
-    plt.show()
