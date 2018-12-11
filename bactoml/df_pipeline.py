@@ -221,7 +221,7 @@ class DFFeatureUnion(FeatureUnion):
         """
         return self.fit(X, y, **fit_params).transform(X)
 
-class SampleWise(Pipeline):
+class SampleWisePipeline(Pipeline):
     """Apply the whole pipeline to each sample sequentially.
 
     At each steps Sklearn Pipeline apply the fit/transform
@@ -267,7 +267,7 @@ class SampleWise(Pipeline):
         """
         try:
             #apply the whole pipeline fit_transform seqentially to all the sample
-            output = pd.concat((super(SampleWise, self).fit_transform(sample) for sample in X), axis=0, join='outer')
+            output = pd.concat((super(SampleWisePipeline, self).fit_transform(sample) for sample in X), axis=0, join='outer')
             output = output.reset_index(drop=True)
         except AttributeError:
             print('One or multiple estimator in the pipeline are not pre-fitted / initialized.')

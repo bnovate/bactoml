@@ -3,7 +3,8 @@ This module implements a class representing a dataset of FCS files.
 The FCDataset is compatible sklearn Pipelines using ..........
 
 """
-import pandas as pd 
+import pandas as pd
+import datetime
 
 from collections.abc import MutableSequence
 from pathlib import Path
@@ -103,9 +104,9 @@ class FCDataSet(MutableSequence):
             raise
 
         if isinstance(index, slice):
-            return [FCMeasurement(ID='{}_{}'.format(self.dir_path.name, index),datafile=df) for df in datafile]
+            return [FCMeasurement(ID='{}_{}'.format(self.dir_path.name, index), datafile=df) for df in datafile]
         else:
-            return FCMeasurement(ID='{}_{}'.format(self.dir_path.name, index),datafile=datafile)
+            return FCMeasurement(ID='{}_{}'.format(self.dir_path.name, index), datafile=datafile)
 
 
     def __setitem__(self, index, value):
@@ -118,10 +119,38 @@ class FCDataSet(MutableSequence):
                 Path to a FCS file.
         
         """
-        try:
-            self.fcs_path.__setitem__(index, check_FCS_path(value))
-        except (TypeError, IndexError, MissingPathError):
-            raise
+        if isinstance(value, list):
+            if all(map(lambda x : isinstance(x, FCMeasurement), value)):
+                try:
+                    paths = list(map(lambda x : check_FCS_path(x.datafile), value))
+                except(TypeError, IndexError, MissingPathError):
+                    raise
+                self.fcs_path.__setitem__(index, paths)
+
+            elif all(map(lambda x : isinstance(x, str), value)):
+                try:
+                    paths = list(map(lambda x : check_FCS_path(x), value))
+                except(TypeError, IndexError, MissingPathError):
+                    raise
+                self.fcs_path.__setitem__(index, paths)
+
+            else:
+                raise ValueError('Expected list of str or list of FCMeasurement.')
+
+        elif isinstance(value, FCMeasurement):
+            try:
+                self.fcs_path.__setitem__(index, check_FCS_path(value.datafile))
+            except(TypeError, IndexError, MissingPathError):
+                raise
+
+        elif isinstance(value, str) or isinstance(value, Path):
+            try:
+                self.fcs_path.__setitem__(index, check_FCS_path(value))
+            except(TypeError, IndexError, MissingPathError):
+                raise
+                
+        else:
+            raise TypeError('Error using FCDataset __setitem__ : expected FCMeasurement, string or list thereof instance got {}'.format(type(value)))
 
         
     def __delitem__(self, index):
@@ -155,22 +184,31 @@ class FCDataSet(MutableSequence):
         index : integer,
                 Position in the list.
         
-        value : string / Path object,
+        value : string / Path object or FCMeasurement,
                 FCS path to insert in the list.
 
         """
-        try:
-            self.fcs_path.insert(index, check_FCS_path(value))
-        except (TypeError, IndexError, MissingPathError):
-            raise
+        if isinstance(value, FCMeasurement):
+            try:
+                self.fcs_path.insert(index, check_FCS_path(value.datafile))
+            except(TypeError, IndexError, MissingPathError):
+                raise
+
+        elif isinstance(value, str) or isinstance(value, Path):
+            try:
+                self.fcs_path.insert(index, check_FCS_path(value))
+            except(TypeError, IndexError, MissingPathError):
+                raise
+                
+        else:
+            raise TypeError('Error using FCDataset ''insert'' method : expected FCMeasurement instance got {}'.format(type(value)))
 
 
     def sort_date_time(self):
         """Sort the FCS path by ascending date-time.
         """
-        df = pd.DataFrame([{'date' : f.get_meta()['$DATE'], 
-                            'time' : f.get_meta()['$BTIM'], 
-                            'path' : f.datafile} for f in self]).sort_values(['date', 'time'])
+        df = pd.DataFrame([{'date_time' : datetime.datetime.strptime("{$DATE} {$BTIM}".format(**f.get_meta()), "%d-%b-%Y %H:%M:%S"),
+                            'path' : f.datafile} for f in self]).sort_values(['date_time'])
 
         self.fcs_path = list(df['path'].values)
 
@@ -190,7 +228,7 @@ if __name__ == '__main__':
     from itertools import count
     from pandas.plotting import scatter_matrix
 
-    from df_pipeline import DFLambdaFunction, DFInPlaceLambda,  DFFeatureUnion, SampleWise
+    from df_pipeline import DFLambdaFunction, DFInPlaceLambda,  DFFeatureUnion, SampleWisePipeline
     from decision_tree_classifier import DTClassifier, HistogramTransform
 
 
@@ -226,7 +264,7 @@ if __name__ == '__main__':
                        ('clustering', dt)])
 
     #pre-preocessing pipeline
-    pp_pipe = SampleWise([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
+    pp_pipe = SampleWisePipeline([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
                                                                                    channels=['FL1', 'FL2', 'SSC'], 
                                                                                    th=1, r=1, d=1, auto_range=False))),
                                   ('TCC_gate', DFLambdaFunction(lambda X : X.gate(TCC_GATE))),

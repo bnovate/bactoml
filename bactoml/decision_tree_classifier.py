@@ -207,11 +207,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
             self.tree_ = pd.DataFrame(recursive_fit(Xt[self.columns + ['counts'] if 'counts' in list(Xt.columns) else self.columns]))
         else:
             self.tree_ = pd.DataFrame(recursive_fit(Xt))
-
-        """print('-'* 200)
-        print(self.tree_)
-        print('-'* 200)"""
-
+            
         return self
 
 
