@@ -142,13 +142,15 @@ class DFInPlaceLambda(BaseEstimator, TransformerMixin):
         the pandas DataFrame instance X.
 
         """
+        X_ = X.copy()
+
         if self.columns:
             for c in self.columns:
-                X[c] = self.func(X[c], X)
+                X_[c] = self.func(X_[c], X_)
         else:
             for c in X.columns:
-                X[c] = self.func(X[c], X)
-        return X
+                X_[c] = self.func(X_[c], X_)
+        return X_
 
 class DFFeatureUnion(FeatureUnion):
     """Feature union that support dataframe as inputs and

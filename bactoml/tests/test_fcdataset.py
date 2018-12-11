@@ -7,13 +7,14 @@ import pathlib
 
 from test_fixtures import fcs_path, locle_dir
 
-# from bactoml.fcdataset import FCDataSet, MissingPathError
 import FlowCytometryTools
 
+# from bactoml.fcdataset import FCDataSet, MissingPathError
 import sys
 sys.path.insert(0, '.')
 
 from fcdataset import FCDataSet, MissingPathError
+
 class TestFCDataset(object):
     
     def test_load_dir(self, locle_dir):
