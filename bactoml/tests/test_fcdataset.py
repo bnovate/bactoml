@@ -9,11 +9,11 @@ from test_fixtures import fcs_path, locle_dir
 
 import FlowCytometryTools
 
-# from bactoml.fcdataset import FCDataSet, MissingPathError
-import sys
-sys.path.insert(0, '.')
+from bactoml.fcdataset import FCDataSet, MissingPathError
 
-from fcdataset import FCDataSet, MissingPathError
+#import sys
+#sys.path.insert(0, '.')
+#from fcdataset import FCDataSet, MissingPathError
 
 class TestFCDataset(object):
     
