@@ -1,17 +1,17 @@
 """
-This module implement the classes needed to integrate sk-learn Pipeline and
-FeaturUnion with pandas DataFrame and FCmeasurment instances (see 
+This module implements the classes needed to integrate sk-learn Pipeline and
+FeatureUnion with pandas DataFrame and FCMeasurment instances (see 
 FlowCytometryTools library).
 
 """
 import numpy as np
 import pandas as pd
+
 from types import LambdaType
 from itertools import product, chain
 from sklearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.base import clone
-from sklearn.pipeline import FeatureUnion, _transform_one, _fit_transform_one
+from sklearn.pipeline import FeatureUnion, _transform_one
 from sklearn.externals.joblib import Parallel, delayed
 from FlowCytometryTools import FCMeasurement
 
@@ -221,7 +221,7 @@ class DFFeatureUnion(FeatureUnion):
         """
         return self.fit(X, y, **fit_params).transform(X)
 
-class SequentialPipeline(Pipeline):
+class SampleWisePipeline(Pipeline):
     """Apply the whole pipeline to each sample sequentially.
 
     At each steps Sklearn Pipeline apply the fit/transform
@@ -267,58 +267,10 @@ class SequentialPipeline(Pipeline):
         """
         try:
             #apply the whole pipeline fit_transform seqentially to all the sample
-            output = pd.concat((super(SequentialPipeline, self).fit_transform(sample) for sample in X), axis=0, join='outer')
+            output = pd.concat((super(SampleWisePipeline, self).fit_transform(sample) for sample in X), axis=0, join='outer')
             output = output.reset_index(drop=True)
         except AttributeError:
             print('One or multiple estimator in the pipeline are not pre-fitted / initialized.')
             raise
 
         return output
-    
-
-#---------------------------------------------------------------------------------------------------#
-#---------------------------------------TEST & EXAMPLE----------------------------------------------#
-#---------------------------------------------------------------------------------------------------#
-
-
-if __name__ == '__main__':
-    from sklearn.pipeline import Pipeline
-    from FlowCytometryTools import ThresholdGate, PolyGate
-    from fc_dataset import FCDataSet
-    from decision_tree_classifier import PCATransform, HistogramTransform, DTClassifier
-
-
-    #TCC gate
-    TCC_GATE = PolyGate([[3.7, 0], [3.7, 3.7], [6.5, 6], [6.5, 0]], ['FL1', 'FL2'])
-    
-    #HNA gate
-    HNA_GATE = ThresholdGate(5.1, 'FL1', 'above')
-
-    #FCS dataset
-    fcds = FCDataSet('/home/omartin/internship/fingerprinting2/data/locle')
-
-    #Estimators 
-
-    #Pipeline
-    funion1 = DFFeatureUnion([('TCC', DFLambdaFunction(lambda X : X.shape[0])),
-                              ('HNAC', Pipeline([('HNA gate', DFLambdaFunction(lambda X : X.gate(HNA_GATE))),
-                                                 ('event counter', DFLambdaFunction(lambda X : X.shape[0]))]))])
-
-    pipe = Pipeline([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
-                                                                 channels=['FL1', 'FL2', 'SSC'], 
-                                                                 th=1, r=1, d=1, auto_range=False))),
-                     ('TCC gate', DFLambdaFunction(lambda X : X.gate(TCC_GATE))),
-                     ('funion1', funion1)])
-
-
-    output = pd.DataFrame([pipe.fit_transform(f) for f in fcds])
-
-    print(output.describe())
-    
-    """                          ('clustering', Pipeline([('histogram', Histogram_transform(edges={'FL1':np.linspace(3.7, 6.5, 100), 
-                                                                                                'SSC':np.linspace(0.05, 6.6, 100)})),
-                                                       ('DT', funion2)]))])
-    
-    funion2 = DFFeatureUnion([('cluster size', DT_classifier(max_depth=3, columns=['FL1', 'SSC'])),
-                              ('update', Pipeline([('update histo', ),
-                                                   ('update DT', )]))]))]))]))])"""
