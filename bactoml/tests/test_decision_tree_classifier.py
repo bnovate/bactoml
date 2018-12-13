@@ -12,6 +12,12 @@ from bactoml.fcdataset import FCDataSet
 from bactoml.decision_tree_classifier import HistogramTransform, DTClassifier
 from bactoml.df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline
 
+"""import sys
+sys.path.insert(0, '.')
+from fcdataset import FCDataSet
+from decision_tree_classifier import HistogramTransform, DTClassifier
+from df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline"""
+
 
 #TCC gate
 TCC_GATE = FlowCytometryTools.PolyGate([[3.7, 0], [3.7, 3.7], [6.5, 6], [6.5, 0]], ['FL1', 'FL2'])
@@ -278,7 +284,7 @@ class TestDecisionTreeClassifier(object):
                  'FL2':np.linspace(-1.5, 1.5, 3)}
         trf = HistogramTransform(edges)
 
-        dt = DTClassifier(max_depth=3, columns=['SSC', 'FL1', 'FL2'], weight_decay=0.5)
+        dt = DTClassifier(max_depth=3, columns=['SSC', 'FL1', 'FL2'], weight_decay=0.1)
         dt.initialize_ewma([fcs], DFLambdaFunction(lambda X : X), edges)
 
         fcs0 = FlowCytometryTools.FCMeasurement(ID='blank', datafile=fcs_path)
