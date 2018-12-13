@@ -8,16 +8,9 @@ import itertools
 from sklearn.pipeline import Pipeline
 from test_fixtures import fcs_path, locle_dir
 
-"""
 from bactoml.fcdataset import FCDataSet
 from bactoml.decision_tree_classifier import HistogramTransform, DTClassifier
-from bactoml.df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline"""
-
-import sys
-sys.path.insert(0, '.')
-from fcdataset import FCDataSet
-from decision_tree_classifier import HistogramTransform, DTClassifier
-from df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline
+from bactoml.df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline
 
 
 #TCC gate
