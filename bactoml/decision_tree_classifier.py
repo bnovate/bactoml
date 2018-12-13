@@ -54,7 +54,7 @@ class HistogramTransform(BaseEstimator, TransformerMixin):
         edges = np.array(edges)
 
         #get the bins centers
-        centers = edges[:, 0:-1] - (edges[:, 1] - edges[:, 0]).reshape(-1, 1) / 2
+        centers = edges[:, 0:-1] + (edges[:, 1] - edges[:, 0]).reshape(-1, 1) / 2
 
         hist = pd.DataFrame(columns=list(self.edges.keys()) + ['counts'])
         bin_sizes = [len(e) for e in centers]
@@ -201,7 +201,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
             Xt = self.ewma
             if self.weight_decay > 0:
                 #update the ewma with the new histogram
-                self.ewma['counts'] = self.weight_decay * X['counts'] + (1 - self.weight_decay) * self.ewma['counts']
+                self.ewma.loc[:, 'counts'] = self.weight_decay * X['counts'].values + (1 - self.weight_decay) * self.ewma['counts'].values
 
         if self.columns:
             self.tree_ = pd.DataFrame(recursive_fit(Xt[self.columns + ['counts'] if 'counts' in list(Xt.columns) else self.columns]))
@@ -273,7 +273,6 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
                 return label_cursor
             
             return label_cursor
-
         
         X['cluster_ID'] = 0
         recursive_predict()
@@ -299,7 +298,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
         if 'counts' in list(X.columns):
             df = pd.DataFrame({'counts':X['counts'], 'labels':self.labels_})
-            return df.groupby(by='labels').sum().values.squeeze()
+            return np.atleast_1d(df.groupby(by='labels').sum().values.squeeze())
         else:
             return np.histogram(self.labels_, len(np.unique(self.labels_)))[0]
     
@@ -336,4 +335,3 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
             self.ewma['counts'] += hist.transform(preprocessing.transform(fcms[i]))['counts']
         
         self.ewma['counts'] /= N
-
