@@ -276,9 +276,8 @@ if __name__ == '__main__':
     super_pipe = Pipeline([('preprocessing', pp_pipe), 
                            ('scaling', DFInPlaceLambda(lambda C, DF : C / DF['VOL'], ['TCC', 'HNAC'])),
                            ('standardization', DFLambdaFunction(StandardScaler()))])
-    
-    output = super_pipe.fit_transform(fcds)
 
+    output = super_pipe.fit_transform(fcds)
     print(output.describe())
 
     for i,f in enumerate(output.columns):
