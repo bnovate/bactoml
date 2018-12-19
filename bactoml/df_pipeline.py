@@ -78,7 +78,7 @@ class DFLambdaFunction(BaseEstimator, TransformerMixin):
             except TypeError:
                 return self.func(X_)    
             else:
-                if isinstance(X_, FCMeasurement):
+                if isinstance(X_, FCMeasurement) or (isinstance(X_, pd.DataFrame) and X_.shape[0] == 1):
                     return self.func(X_) 
                 else:
                     out = []

@@ -271,20 +271,24 @@ if __name__ == '__main__':
                                   ('funion', DFFeatureUnion([('VOL', vol),
                                                              ('TCC', tcc),
                                                              ('HNAC', hna),
-                                                             ('CLSIZE', clsize)]))])
+                                                             ('CLSIZE', clsize)])),
+                                  ('test', DFLambdaFunction(lambda X : pd.DataFrame(data=X['VOL'], columns=['VOL'])))])
 
-    super_pipe = Pipeline([('preprocessing', pp_pipe), 
+    """super_pipe = Pipeline([('preprocessing', pp_pipe), 
                            ('scaling', DFInPlaceLambda(lambda C, DF : C / DF['VOL'], ['TCC', 'HNAC'])),
                            ('standardization', DFLambdaFunction(StandardScaler()))])
 
     output = super_pipe.fit_transform(fcds)
+    print(output.describe())"""
+
+    output = pp_pipe.fit_transform(fcds)
     print(output.describe())
 
     for i,f in enumerate(output.columns):
         y = output[f]
         y -= y.min()
         y /= y.max()
-        plt.plot(y + 1.1 * i)
+        plt.plot(y)
 
     plt.legend()
     plt.show()
