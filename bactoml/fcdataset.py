@@ -222,6 +222,8 @@ if __name__ == '__main__':
     import pandas as pd 
     import matplotlib.pyplot as plt
 
+    import re
+
     from FlowCytometryTools import PolyGate, ThresholdGate
     from sklearn.pipeline import Pipeline
     from sklearn.preprocessing import StandardScaler
@@ -230,6 +232,7 @@ if __name__ == '__main__':
 
     from df_pipeline import DFLambdaFunction, DFInPlaceLambda,  DFFeatureUnion, SampleWisePipeline
     from decision_tree_classifier import DTClassifier, HistogramTransform
+    from graph_model import GraphModel
 
 
     #TCC gate
@@ -243,10 +246,11 @@ if __name__ == '__main__':
     
     #Histogram edges
     edges = {'FL1':np.linspace(3.7, 6.5, 30),
+             'FL2':np.linspace(0.05, 6.6, 30),
              'SSC':np.linspace(0.05, 6.6, 30)}
 
     #Decision tree with exponentialy weighted moving average
-    dt = DTClassifier(max_depth=2, columns=['FL1', 'SSC'], weight_decay=0.07)
+    dt = DTClassifier(max_depth=2, columns=['FL1', 'FL2', 'SSC'], weight_decay=0.07)
     dt.initialize_ewma(fcds[0:50], DFLambdaFunction(lambda X : X.transform('tlog', channels=['FL1', 'FL2', 'SSC'], th=1, r=1, d=1, auto_range=False).gate(TCC_GATE)), edges)
 
     #Pipeline computing VOL
@@ -263,32 +267,43 @@ if __name__ == '__main__':
     clsize = Pipeline([('histogram', HistogramTransform(edges=edges)),
                        ('clustering', dt)])
 
+    #Pipeline graph model
+    graph = GraphModel(columns=['CLSIZE_0', 'CLSIZE_1', 'CLSIZE_2', 'CLSIZE_3'], cc_threshold=0.20)
+    p = SampleWisePipeline([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
+                                                                             channels=['FL1', 'FL2', 'SSC'], 
+                                                                             th=1, r=1, d=1, auto_range=False))),
+                            ('TCC_gate', DFLambdaFunction(lambda X : X.gate(TCC_GATE))),
+                            ('funion', DFFeatureUnion([('CLSIZE', clsize)]))])
+    graph.initialize_graph(fcds[0:50], p)
+    graph_model = Pipeline([('graph_model', graph)])
+
     #pre-preocessing pipeline
     pp_pipe = SampleWisePipeline([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
                                                                                    channels=['FL1', 'FL2', 'SSC'], 
                                                                                    th=1, r=1, d=1, auto_range=False))),
                                   ('TCC_gate', DFLambdaFunction(lambda X : X.gate(TCC_GATE))),
-                                  ('funion', DFFeatureUnion([('VOL', vol),
+                                  ('funion1', DFFeatureUnion([('VOL', vol),
                                                              ('TCC', tcc),
                                                              ('HNAC', hna),
                                                              ('CLSIZE', clsize)])),
-                                  ('test', DFLambdaFunction(lambda X : pd.DataFrame(data=X['VOL'], columns=['VOL'])))])
+                                  ('funion2', DFFeatureUnion([('labels', graph_model), 
+                                                              ('VOL', DFLambdaFunction(lambda X : X['VOL'])),
+                                                              ('TCC', DFLambdaFunction(lambda X : X['TCC'])),
+                                                              ('HNAC', DFLambdaFunction(lambda X : X['HNAC'])),
+                                                              ('CLSIZE', DFLambdaFunction(lambda X : X[['CLSIZE_0', 'CLSIZE_1', 'CLSIZE_2', 'CLSIZE_3']]))]))])
 
-    """super_pipe = Pipeline([('preprocessing', pp_pipe), 
+    super_pipe = Pipeline([('preprocessing', pp_pipe), 
                            ('scaling', DFInPlaceLambda(lambda C, DF : C / DF['VOL'], ['TCC', 'HNAC'])),
                            ('standardization', DFLambdaFunction(StandardScaler()))])
 
     output = super_pipe.fit_transform(fcds)
-    print(output.describe())"""
-
-    output = pp_pipe.fit_transform(fcds)
     print(output.describe())
 
     for i,f in enumerate(output.columns):
         y = output[f]
         y -= y.min()
         y /= y.max()
-        plt.plot(y)
+        plt.plot(i * 1.1 + y)
 
     plt.legend()
-    plt.show()
+    plt.show() 
