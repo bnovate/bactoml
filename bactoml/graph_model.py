@@ -164,7 +164,7 @@ class GraphModel(BaseEstimator, TransformerMixin):
         self.graph.node[new_idx]['closeness_centrality'] = closeness_centrality
         self.graph.node[new_idx]['labels'] = closeness_centrality < 0.2
 
-        return pd.DataFrame(data=[self.graph.node[new_idx]['labels']], columns=['labels'])
+        return pd.DataFrame(data=[self.graph.node[new_idx]['closeness_centrality']], columns=['labels'])
 
 
 

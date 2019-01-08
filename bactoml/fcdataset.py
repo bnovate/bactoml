@@ -122,14 +122,14 @@ class FCDataSet(MutableSequence):
         if isinstance(value, list):
             if all(map(lambda x : isinstance(x, FCMeasurement), value)):
                 try:
-                    paths = list(map(lambda x : check_FCS_path(x.datafile), value))
+                    paths = [check_FCS_path(x.datafile) for x in value]
                 except(TypeError, IndexError, MissingPathError):
                     raise
                 self.fcs_path.__setitem__(index, paths)
 
             elif all(map(lambda x : isinstance(x, str), value)):
                 try:
-                    paths = list(map(lambda x : check_FCS_path(x), value))
+                    paths = [check_FCS_path(x) for x in value]
                 except(TypeError, IndexError, MissingPathError):
                     raise
                 self.fcs_path.__setitem__(index, paths)

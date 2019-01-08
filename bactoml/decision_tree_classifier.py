@@ -43,7 +43,7 @@ class HistogramTransform(BaseEstimator, TransformerMixin):
 
         """
         #extract the volume from the meta data
-        V = float(X.get_meta()['$VOL']) * 1E-6
+        V = float(X.get_meta()['$VOL'])
 
         #extract only the colums of interest
         X_ = X[list(self.edges.keys())]
