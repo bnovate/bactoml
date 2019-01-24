@@ -31,7 +31,7 @@ class SpikingPoissonModel():
     such that V = V_A + V_B = 0.9 mL, the standard volume of a measurement,
     follows a Poisson law of rate V_A/V l_A + V_B/V l_B.
 
-    (*) here we loose the patterns variation seen in some periodic sources. 
+    (*) we loose the patterns variation seen in some periodic sources. 
 
     """
 
@@ -291,6 +291,24 @@ class SpikingEventModel():
 
             yield (i, sample)
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         
 #TCC gate
