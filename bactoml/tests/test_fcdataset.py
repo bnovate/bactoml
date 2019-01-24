@@ -11,9 +11,9 @@ import FlowCytometryTools
 
 from bactoml.fcdataset import FCDataSet, MissingPathError
 
-#import sys
-#sys.path.insert(0, '.')
-#from fcdataset import FCDataSet, MissingPathError
+"""import sys
+sys.path.insert(0, '.')
+from fcdataset import FCDataSet, MissingPathError"""
 
 class TestFCDataset(object):
     

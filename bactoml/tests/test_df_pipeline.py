@@ -10,10 +10,10 @@ from test_fixtures import fcs_path, locle_dir
 from bactoml.fcdataset import FCDataSet
 from bactoml.df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline
 
-#import sys
-#sys.path.insert(0, '.')
-#from fcdataset import FCDataSet
-#from df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline
+"""import sys
+sys.path.insert(0, '.')
+from fcdataset import FCDataSet
+from df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline"""
 
 
 #TCC gate

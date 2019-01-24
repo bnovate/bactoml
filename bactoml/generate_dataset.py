@@ -1,22 +1,323 @@
-"""for i, idx in enumerate(rand_idx):
-    sample_hist[:, :, i] = p.fit_transform(fcds[idx]).groupby(by=['FL1', 'SSC'], sort=False).agg({'counts' : 'sum'}).values.reshape(29,29)"""
-
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.stats import norm
-from scipy.special import factorial
+from sklearn.pipeline import Pipeline
+from scipy.stats import poisson
+from itertools import count, cycle
+from pathlib import Path
+from FlowCytometryTools import PolyGate, FCMeasurement
+
 
 from fcdataset import FCDataSet
-from sklearn.pipeline import Pipeline
-from FlowCytometryTools import PolyGate
 from df_pipeline import DFLambdaFunction
 from decision_tree_classifier import HistogramTransform
+from fcdataset import MissingPathError
 
+class SpikingPoissonModel():
+    """
+    Generate artificial dataset by spiking multiple datasets together.
+
+    The sum of independent Poisson variables with rate l1 and l2 
+    follows a Poisson law with rate l1 + l2.
+    A random Poisson variable following a Poisson law with rate l
+    over an inteval T can be rescaled to an interval T' by adjusting 
+    the rate to l * T' / T.
+
+    Here we assume that the distribution of event over the bins of a 
+    same histogram are independent (*). We also assume that the datasets
+    used as reference are independent.
+
+    The number of events on a histogram bin for a mixture of water A and B
+    such that V = V_A + V_B = 0.9 mL, the standard volume of a measurement,
+    follows a Poisson law of rate V_A/V l_A + V_B/V l_B.
+gi
+    (*) we loose the patterns variation seen in some periodic sources. 
+
+    """
+
+    def __init__(self, datasets, histogram_pipeline):
+        """
+        Parameters:
+        -----------
+        datasets : list of strings,
+                   Path of the directories containing all
+                   the FCS files used as reference.
+
+        histogram_pipeline: sklearn Pipeline.
+                            Pipeline applying preprocessing and
+                            histogram transform to a FCDataset.
+                            The histogram transform step should
+                            be called 'histogram' in the sklearn
+                            Pipeline. 
+
+        """
+        #histogram dimensions:
+        try:
+            hist_step = histogram_pipeline.named_steps['histogram'].edges
+            self.dct_dimensions = {channel : len(edges)-1 for channel, edges in hist_step.items()}
+
+        except KeyError:
+            print('The preprocessing pipeline must implement an HistogramTransform step named "histogram".')
+
+        #estimate Poisson distribution parameter for all the histogram bins
+        """The Poisson rate is given by the mean count per bin scaled to the same
+        volume for each FCS file (here 0.9 mL). The scaling step is already 
+        implemented in the HistogramTransform.
+        """
+        self.poisson_lambdas = []
+        
+        for data in datasets:
+            lambdas = np.zeros(np.prod(list(self.dct_dimensions.values())))
+            
+            for n, fcs in enumerate(FCDataSet(data)):
+                h = histogram_pipeline.fit_transform(fcs)
+                lambdas += (np.round(h['counts'].values) - lambdas) / (n + 1)
+            
+            self.poisson_lambdas.append(lambdas)
+
+    def spike_single_concentration(self, mixing_coeff):
+        """Given mixing coefficients, generate artificial histograms for a
+        mix of different sources.
+
+        Parameters:
+        -----------
+        mixing_coeff : 1D array containing the mixing coefficients.
+
+        Returns:
+        --------
+        (i, sample) : generator returning artificial samples and their 
+                      index i.
+
+        """
+        #mixing coefficients shouls sum to 1
+        mixing_coeff = np.array(mixing_coeff) / np.sum(mixing_coeff)
+
+        mix_lambdas = np.zeros(np.prod(list(self.dct_dimensions.values())))
+        for coeff, lambdas in zip(mixing_coeff, self.poisson_lambdas):
+            mix_lambdas += lambdas * coeff
+
+        #sample the Poisson distribution of the mixed samples
+        for i in count():
+            sample = np.array([poisson.rvs(lambdas) for lambdas in mix_lambdas]).reshape(list(self.dct_dimensions.values()))
+            yield (i, sample)
+
+
+    def spike_single_profile(self, profile):
+        """Given a sequence of mixing coefficients, generate a sequence of
+        artificial histograms for mixes of sources with different composition.
+
+        Parameters:
+        -----------
+        profile : 2D array, (N_steps, N_sources).
+                  For each step of the profile contains the mixing coefficient.
+
+        Returns:
+        (i, sample) : generator returning artificial samples and their index i.
+        --------
+
+
+        """
+        for i, step in enumerate(profile):
+            mixing_coeff = np.array(step) / np.sum(step)
+
+            mix_lambdas = np.zeros(np.prod(list(self.dct_dimensions.values())))
+            for coeff, lambdas in zip(mixing_coeff, self.poisson_lambdas):
+                mix_lambdas += lambdas * coeff
+
+            sample = np.array([poisson.rvs(lambdas) for lambdas in mix_lambdas]).reshape(list(self.dct_dimensions.values()))
+            yield (i, sample)
+            
+
+    def spike_periodic_profile(self, profile):
+        """Given a squence of mixing coefficients, generate a periodic infinite 
+        sequence of artificial historgrams for mixes of sources with different
+        compositions.
+
+        Parameters:
+        -----------
+        profile : 2D array, (N_steps, N_sources).
+                  For each step of the profile contains the mixing coefficient.
+
+        Returns:
+        (i, sample) : generator returning artificial samples and their index i.
+        """
+        for i, step in enumerate(cycle(profile)):
+            mixing_coeff = np.array(step) / np.sum(step)
+
+            mix_lambdas = np.zeros(np.prod(list(self.dct_dimensions.values())))
+            for coeff, lambdas in zip(mixing_coeff, self.poisson_lambdas):
+                mix_lambdas += lambdas * coeff
+            
+            sample = np.array([poisson.rvs(lambdas) for lambdas in mix_lambdas]).reshape(list(self.dct_dimensions.values()))
+            yield (i, sample)
+
+class SpikingEventModel():
+    """Generate artificial dataset by spiking multiple datasets together.
+
+    """
+
+    def __init__(self, directories, columns):
+        """
+        Parameters:
+        -----------
+        directories : list of strings,
+                      Path of the directories containing all
+                      the FCS files used as reference.
+
+        columns : list of strings,
+                  List of the FCS column names to use when 
+                  building the artificial datasets, 
+                  e.g. ['SSC', 'FL1', 'FL2']
+
+        """
+        self.dir_paths = [] #1D list containing the path of the directories containing the FCS files
+        self.fcs_paths = [] #2D list containing the FCS file paths 
+
+        for dir_path in directories:
+            if Path(dir_path).exists():
+                path = Path(dir_path).resolve()
+                self.dir_paths.append(path)
+                self.fcs_paths.append(list(path.glob('**/*.fcs')))
+            else:
+                raise MissingPathError(dir_path)
+
+        self.columns = columns
+
+    def spike_single_concentration(self, mixing_coeff):
+        """Given mixing coefficients, generate artificial histograms for a
+        mix of different sources.
+
+        Parameters:
+        -----------
+        mixing_coeff : 1D array containing the mixing coefficients.
+
+        Returns:
+        --------
+        (i, sample) : generator returning artificial samples and their 
+                      index i.
+
+        """
+        #mixing coefficients should sum to 1
+        mixing_coeff = np.array(mixing_coeff) / np.sum(mixing_coeff)
+
+        for i in count():
+            sample = pd.DataFrame()
+
+            for paths, coeff in zip(self.fcs_paths, mixing_coeff):
+                #number of FCS files to sample from
+                n_fcs = np.random.randint(0, len(paths))
+                #fraction of each FCS file event to subsample
+                fraction = np.random.rand(n_fcs)
+                fraction *= coeff / np.sum(fraction)
+                #FCS file indices
+                indices = np.random.randint(0, len(paths), n_fcs)
+
+                #build the artificial FCS file by sampling the reference datasets
+                for idx, f in zip(indices, fraction):
+                    data = FCMeasurement(ID='', datafile=paths[idx])
+                    sample = sample.append(data.get_data().sample(frac=f)[self.columns], ignore_index=True)
+
+            yield (i, sample)
+    
+    def spike_single_profile(self, profile):
+        """Given mixing coefficients, generate artificial histograms for a
+        mix of different sources.
+
+        Parameters:
+        -----------
+        profile : 2D array, (N_steps, N_sources).
+                  For each step of the profile contains the mixing coefficient.
+
+        Returns:
+        --------
+        (i, sample) : generator returning artificial samples and their 
+                      index i.
+
+        """
+        for i, step in enumerate(profile):
+            #mixing coefficients should sum to 1
+            mixing_coeff = np.array(step) / np.sum(step)
+
+            sample = pd.DataFrame()
+
+            for paths, coeff in zip(self.fcs_paths, mixing_coeff):
+                #number of FCS files to sample from
+                n_fcs = np.random.randint(0, len(paths))
+                #fraction of each FCS file event to subsample
+                fraction = np.random.rand(n_fcs)
+                fraction *= coeff / np.sum(fraction)
+                #FCS file indices
+                indices = np.random.randint(0, len(paths), n_fcs)
+
+                #build the artificial FCS file by sampling the reference datasets
+                for idx, f in zip(indices, fraction):
+                    data = FCMeasurement(ID='', datafile=paths[idx])
+                    sample = sample.append(data.get_data().sample(frac=f)[self.columns], ignore_index=True)
+
+            yield (i, sample)
+    
+    def spike_periodic_profile(self, profile):
+        """Given a squence of mixing coefficients, generate a periodic infinite 
+        sequence of artificial historgrams for mixes of sources with different
+        compositions.
+
+        Parameters:
+        -----------
+        profile : 2D array, (N_steps, N_sources).
+                  For each step of the profile contains the mixing coefficient.
+
+        Returns:
+        (i, sample) : generator returning artificial samples and their index i.
+        """
+        for i, step in enumerate(cycle(profile)):
+            #mixing coefficients should sum to 1
+            mixing_coeff = np.array(step) / np.sum(step)
+
+            sample = pd.DataFrame()
+
+            for paths, coeff in zip(self.fcs_paths, mixing_coeff):
+                #number of FCS files to sample from
+                n_fcs = np.random.randint(0, len(paths))
+                #fraction of each FCS file event to subsample
+                fraction = np.random.rand(n_fcs)
+                fraction *= coeff / np.sum(fraction)
+                #FCS file indices
+                indices = np.random.randint(0, len(paths), n_fcs)
+
+                #build the artificial FCS file by sampling the reference datasets
+                for idx, f in zip(indices, fraction):
+                    data = FCMeasurement(ID='', datafile=paths[idx])
+                    sample = sample.append(data.get_data().sample(frac=f)[self.columns], ignore_index=True)
+
+            yield (i, sample)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
 #TCC gate
 TCC_GATE = PolyGate([[3.7, 0], [3.7, 3.7], [6.5, 6], [6.5, 0]], ['FL1', 'FL2'])
 
-#FCS dataset
+#FCS datasets
 fcds = FCDataSet('/home/omartin/internship/fingerprinting2/data/locle')
+dataset_1 = fcds[0:350]
+dataset_2 = fcds[351:len(fcds)]
 
 #Histogram edges
 n_fl1 = 41
@@ -36,128 +337,19 @@ p = Pipeline([('tlog', DFLambdaFunction(lambda X : X.transform('tlog',
               ('TCC_gate', DFLambdaFunction(lambda X : X.gate(TCC_GATE))),
               ('histogram', HistogramTransform(edges=edges))])
 
-#Estimate Poisson lambda parameter for each bin
-lambdas_1 = np.zeros((n_fl1-1, n_ssc-1))
-lambdas_2 = np.zeros((n_fl1-1, n_ssc-1))
+dir1 = "/home/omartin/internship/fingerprinting2/data/locle" 
+dir2 = "/home/omartin/internship/fingerprinting2/data/zurich"
 
-"""for i in np.arange(0, 350):
-        h =  p.fit_transform(fcds[i])
-        lambdas_1 += (np.round(h['counts'].values.reshape(n_fl1-1, n_ssc-1)) - lambdas_1) / (i + 1)
+sm = SpikingPoissonModel([dir1, dir2], p) #, ['SSC', 'FL1', 'FL2'])
 
-for i in np.arange(350, len(fcds)):
-        h =  p.fit_transform(fcds[i])
-        lambdas_2 += (np.round(h['counts'].values.reshape(n_fl1-1, n_ssc-1)) - lambdas_2) / (i + 1)"""
+artificial_datasets = sm.spike_single_profile([[c, 1-c] for c in 0.5 + 0.5 * np.sin(np.linspace(0, 2 * np.pi, 10))])
 
-sample_1 = np.arange(0, 350) #np.random.randint(0, 350, 100)
-sample_2 = np.arange(350, len(fcds)) #np.random.randint(0, 350, 100)
+#blank = FCMeasurement(ID='', datafile='/home/omartin/internship/bactoml/bactoml/testdata/locle/20170531-125801 Cte8 31_05_2017 wac 30%/20170531-125801_events.fcs')
 
-for i, idx in enumerate(sample_1):
-        h =  p.fit_transform(fcds[idx])
-        lambdas_1 += (np.round(h['counts'].values.reshape(n_fl1-1, n_ssc-1)) - lambdas_1) / (i + 1)
-
-for i, idx in enumerate(sample_2):
-        h =  p.fit_transform(fcds[idx])
-        lambdas_2 += (np.round(h['counts'].values.reshape(n_fl1-1, n_ssc-1)) - lambdas_2) / (i + 1)
-
-val = []
-for l1, l2 in zip(lambdas_1.flatten(), lambdas_2.flatten()):
-        l_max = np.max([l1, l2, 2])
-
-        if l1 == 0 :
-                log_p1_ = 0
-        else :
-                log_p1_ = list(map(lambda x : np.log(x) - l1 + x * np.log(l1) - (x * np.log(x) - x + 0.5 * np.log(x) + 0.5 * np.log(2*np.pi)), np.arange(1, np.round(2 * l_max))))
-                log_p1_.insert(0, -l1)
-
-        
-        if l2 == 0:
-                log_p2_ = 0
-        else :
-                log_p2_ = list(map(lambda x : - l2 + x * np.log(l2) - (x * np.log(x) - x + 0.5 * np.log(x) + 0.5 * np.log(2*np.pi)), np.arange(1, np.round(2 * l_max))))
-                log_p2_.insert(0, -l2)
-
-        log_p1_ = np.array(log_p1_)
-        log_p2_ = np.array(log_p2_)
-
-        p1_ = np.exp(log_p1_)
-        p2_ = np.exp(log_p2_)
-
-        p1_p2_ = p1_ + p2_
-
-
-
-        val.append(-0.5 * np.sum(np.multiply(p1_p2_, np.log(0.5 * p1_p2_)) - np.multiply(p1_, log_p1_) - np.multiply(p2_, log_p2_)))
-
-        """fig, axes = plt.subplots(3, 2, sharex=True, sharey=False)
-
-        axes[0, 0].plot(p1)
-        axes[0, 1].plot(p2)
-        axes[1, 0].plot(np.exp(log_p1_))
-        axes[1, 1].plot(np.exp(log_p2_))
-        axes[2, 0].plot(np.multiply(p1, p2))
-        axes[2, 1].plot(np.exp(log_p1_ + log_p2_))"""
-
-val = np.array(val).reshape(n_fl1-1, n_ssc-1)
-plt.subplots()
-plt.imshow(val)
-plt.colorbar()
-plt.title('{}'.format(np.mean(val)))
-
-plt.subplots()
-plt.imshow(lambdas_1)
-plt.colorbar()
-plt.title('Poisson lambdas_1 - {}'.format(np.mean(lambdas_1)))
-
-plt.subplots()
-plt.imshow(lambdas_2)
-plt.colorbar()
-plt.title('Poisson lambdas_2 - {}'.format(np.mean(lambdas_2)))
-
-
-
-"""z_LS = np.abs(lambdas_2 - lambdas_1) / np.sqrt(lambdas_2 / len(sample_2) + lambdas_1 / len(sample_1))
-z_LS[np.isnan(z_LS)] = 0
-
-z_SR = np.abs(np.sqrt(lambdas_2) - np.sqrt(lambdas_1)) /  (np.sqrt(1 / len(sample_1 + 1 / len(sample_2))) / 2)
-
-alpha = 0.05
-power_LS = norm.pdf(z_LS - norm.pdf(1 - alpha / 2))
-power_SR = norm.pdf(z_SR - norm.pdf(1 - alpha / 2))
-
-plt.subplots()
-plt.imshow(z_LS)
-
-plt.subplots()
-plt.imshow(z_SR)
-
-plt.subplots()
-plt.imshow(power_LS)
-
-plt.subplots()
-plt.imshow(power_SR)"""
-
-"""contaminations = [0, 0.25, 0.5, 0.75, 1]
-PCC_1 = []
-PCC_2 = []
-
-for c in contaminations:
-        h_gen = np.zeros(((n_fl1-1)*(n_ssc-1)))
-        for i, (l1, l2) in enumerate(zip(lambdas_1.flatten(), lambdas_2.flatten())):
-                h_gen[i] = np.random.poisson(lam=(1-c)*l1 + c*l2)
-
-        PCC = np.array([])
-        for i in np.arange(0, 350):
-                np.append(PCC, np.corrcoef(h_gen, p.fit_transform(fcds[i])['counts'].values)[0, 1])
-        print(PCC)
-        np.append(PCC_1, np.mean(PCC))
-        
-        PCC = np.array([])
-        for i in np.arange(350, len(fcds)):
-                np.append(PCC, np.corrcoef(h_gen, p.fit_transform(fcds[i])['counts'].values)[0, 1])
-        np.append(PCC_2, np.mean(PCC))
-
-plt.subplots()
-plt.plot(PCC_1)
-plt.plot(PCC_2)"""
+for data, _ in zip(artificial_datasets, range(20)):
+    
+    plt.subplots()
+    plt.imshow(data[1])
+    plt.title(data[0])
 
 plt.show()
