@@ -41,8 +41,8 @@ class TestHistogramTransform(object):
 
         #HistogramTransform instance
         edges = {'FL1':np.linspace(3.7, 6.5, 3),
-                 'SSC':np.linspace(0.05, 6.6, 3),
-                 'FL2':np.linspace(0.05, 6.5, 3)}
+                 'FL2':np.linspace(0.05, 6.6, 3),
+                 'SSC':np.linspace(0.05, 6.6, 3)}
         trf = HistogramTransform(edges)
 
         #apply the transform
@@ -53,10 +53,10 @@ class TestHistogramTransform(object):
                 .gate(FlowCytometryTools.IntervalGate((0.05, 6.6), 'SSC', 'in')) \
                 .gate(FlowCytometryTools.IntervalGate((0.05, 6.5), 'FL2', 'in'))
 
-        #test the results of the transfroma
+        #test the results of the transformation
         assert isinstance(res, pd.DataFrame)
 
-        assert res['FL1'].min() >= 3.7
+        assert res['FL1'].min() >= 3.7 
         assert res['FL1'].max() <= 6.5
         assert res['FL2'].min() >= 0.05
         assert res['FL2'].max() <= 6.5
