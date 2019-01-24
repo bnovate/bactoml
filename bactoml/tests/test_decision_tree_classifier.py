@@ -8,15 +8,15 @@ import itertools
 from sklearn.pipeline import Pipeline
 from test_fixtures import fcs_path, locle_dir
 
-from bactoml.fcdataset import FCDataSet
+"""from bactoml.fcdataset import FCDataSet
 from bactoml.decision_tree_classifier import HistogramTransform, DTClassifier
-from bactoml.df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline
+from bactoml.df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline"""
 
-"""import sys
+import sys
 sys.path.insert(0, '.')
 from fcdataset import FCDataSet
 from decision_tree_classifier import HistogramTransform, DTClassifier
-from df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline"""
+from df_pipeline import DFLambdaFunction, DFInPlaceLambda, DFFeatureUnion, SampleWisePipeline
 
 
 #TCC gate
@@ -56,6 +56,7 @@ class TestHistogramTransform(object):
         #test the results of the transformation
         assert isinstance(res, pd.DataFrame)
 
+        #test the min max values of the transformed data
         assert res['FL1'].min() >= 3.7 
         assert res['FL1'].max() <= 6.5
         assert res['FL2'].min() >= 0.05
@@ -63,7 +64,8 @@ class TestHistogramTransform(object):
         assert res['SSC'].min() >= 0.05
         assert res['SSC'].max() <= 6.6
 
-        assert np.abs(res['counts'].sum() - (1E6 * gt.shape[0] / float(ds.get_meta()['$VOL']))) <= 1E-6
+        #test that the number of events in the transformed data and ground truth are the same
+        assert res['counts'].sum() == 9E+4 * gt.shape[0] / float(ds.get_meta()['$VOL'])
 
 class TestDecisionTreeClassifier(object):
 
@@ -72,7 +74,7 @@ class TestDecisionTreeClassifier(object):
         fcs = FlowCytometryTools.FCMeasurement(ID='blank', datafile=fcs_path)
 
         #edit the FCMeasurement instance values for the test
-        fcs.get_meta()['$VOL'] = 1E6
+        fcs.get_meta()['$VOL'] = 9E+4 
         data = fcs.get_data().iloc[0:8, :]
         data[['SSC', 'FL1', 'FL2']] = np.random.rand(8, 3)
         fcs.set_data(data)
@@ -98,7 +100,7 @@ class TestDecisionTreeClassifier(object):
         fcs = FlowCytometryTools.FCMeasurement(ID='blank', datafile=fcs_path)
 
         #edit the FCMeasurement instance values for the test
-        fcs.get_meta()['$VOL'] = 1E6
+        fcs.get_meta()['$VOL'] = 9E+4 
         data = fcs.get_data().iloc[0:8, :]
         data[['SSC', 'FL1', 'FL2']] = np.random.rand(8, 3)
         fcs.set_data(data)
@@ -129,7 +131,7 @@ class TestDecisionTreeClassifier(object):
         fcs = FlowCytometryTools.FCMeasurement(ID='blank', datafile=fcs_path)
 
         #edit the FCMeasurement instance values for the test
-        fcs.get_meta()['$VOL'] = 1E6
+        fcs.get_meta()['$VOL'] = 9E+4 
         data = fcs.get_data().iloc[0:8, :]
         features = list(itertools.product([-3, 3], [-2, 2], [-1, 1]))
         f1, f2, f3 = map(list, zip(*features))
@@ -151,7 +153,7 @@ class TestDecisionTreeClassifier(object):
         fcs = FlowCytometryTools.FCMeasurement(ID='blank', datafile=fcs_path)
 
         #edit the FCMeasurement instance values for the test
-        fcs.get_meta()['$VOL'] = 1E6
+        fcs.get_meta()['$VOL'] = 9E+4 
         data = fcs.get_data().iloc[0:8, :]
         features = list(itertools.product([-3, 3], [-2, 2], [-1, 1]))
         f1, f2, f3 = map(list, zip(*features))
@@ -191,7 +193,7 @@ class TestDecisionTreeClassifier(object):
         fcs = FlowCytometryTools.FCMeasurement(ID='blank', datafile=fcs_path)
 
         #edit the FCMeasurement instance values for the test
-        fcs.get_meta()['$VOL'] = 1E6
+        fcs.get_meta()['$VOL'] = 9E+4
         data = fcs.get_data().iloc[0:8, :]
         features = list(itertools.product([-3, 3], [-2, 2], [-1, 1]))
         f1, f2, f3 = map(list, zip(*features))
@@ -268,7 +270,7 @@ class TestDecisionTreeClassifier(object):
         fcs = FlowCytometryTools.FCMeasurement(ID='blank', datafile=fcs_path)
 
         #edit the FCMeasurement instance values for the test
-        fcs.get_meta()['$VOL'] = 1E6
+        fcs.get_meta()['$VOL'] = 9E+4
         data = fcs.get_data().iloc[0:8, :]
         features = list(itertools.product([-3, 3], [-2, 2], [-1, 1]))
         f1, f2, f3 = map(list, zip(*features))
