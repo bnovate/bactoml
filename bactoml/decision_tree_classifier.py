@@ -65,8 +65,8 @@ class HistogramTransform(BaseEstimator, TransformerMixin):
         for (c, name) in enumerate(X_.columns):
             hist[name] = np.array(list(map(lambda e: [e] * nb_repeat[c], centers[c])) * nb_copies[c]).flatten()
 
-        hist['counts'] = np.array(H).flatten() / V
-         
+        hist['counts'] = np.array(H).flatten() * (9E+4 / V)
+                 
         return hist
 
 
@@ -94,8 +94,8 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
                        If not None the DC_classifier must follow a
                        Histogram_transform in the pipeline and the decision
                        tree classifier is fit on the exponentially weighted
-                       moving average (emwa). Note that this require that the 
-                       emwa is initialized before calling fit on the pipeline.
+                       moving average (ewma). Note that this require that the 
+                       ewma is initialized before calling fit on the pipeline.
                        Larger weight decay discard contribution of old FCS
                        faster and a weight decay of zero corresponds to a 
                        constant mean histogram fixed to the initialized values.
@@ -321,7 +321,8 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
                     'channel_id':edges with edges an array 
                     containing the edges of the bins along a 
                     particular channel.
-
+        Returns:
+        --------
         """
 
         #instanciate the histogram transformer

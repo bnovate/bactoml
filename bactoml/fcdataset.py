@@ -245,9 +245,9 @@ if __name__ == '__main__':
     fcds = FCDataSet('/home/omartin/internship/fingerprinting2/data/locle')
     
     #Histogram edges
-    edges = {'FL1':np.linspace(3.7, 6.5, 30),
-             'FL2':np.linspace(0.05, 6.6, 30),
-             'SSC':np.linspace(0.05, 6.6, 30)}
+    edges = {'FL1':np.linspace(3.7, 6.5, 3),
+             'FL2':np.linspace(0.05, 6.6, 3),
+             'SSC':np.linspace(0.05, 6.6, 3)}
 
     #Decision tree with exponentialy weighted moving average
     dt = DTClassifier(max_depth=2, columns=['FL1', 'FL2', 'SSC'], weight_decay=0.07)
