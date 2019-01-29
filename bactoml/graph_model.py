@@ -1,5 +1,19 @@
 """
-This module implements...
+This module implements the graph model for outlier detection.
+
+Each FCS file corresponds to a node of the graph and has features
+attributed: 
+ - its features ('coordinates in space'), the features extracted by the pipeline
+ - the mean distance between itself and the rest of the nodes
+ - its closeness centrality in the graph
+ - its label, -1 for outlier and 1 for inliner
+
+When a node is added to the network the mean distance of all the nodes is
+updated and the average mean distance for the whole network is computed.
+An edge is formed between the new node and its neighbor which are closer
+than the average mean distance in the network. The closeness centrality 
+of the new node is computed and if it falls bellow a fixed thershold the
+point is labeled as an outlier.
 
 """
 
@@ -50,7 +64,7 @@ class GraphModel(BaseEstimator, TransformerMixin):
 
     def initialize_graph(self, X, pp_pipe):
         """Initialize the graph model.
-        Initialize the graph and corrdinate and outlier queues.
+        Initialize the graph and coordinate and outlier queues.
         
         Parameters:
         -----------
@@ -91,7 +105,7 @@ class GraphModel(BaseEstimator, TransformerMixin):
             """
             mean_distance = 0
             
-            for index, vals in df.iterrows():
+            for _, vals in df.iterrows():
                 mean_distance += self.distance_func(vals.values, row.values)
             mean_distance /= len(list(df.iterrows())) - 1
             
@@ -165,9 +179,3 @@ class GraphModel(BaseEstimator, TransformerMixin):
         self.graph.node[new_idx]['labels'] = closeness_centrality < 0.2
 
         return pd.DataFrame(data=[self.graph.node[new_idx]['closeness_centrality']], columns=['labels'])
-
-
-
-
-
-    

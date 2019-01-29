@@ -15,6 +15,8 @@ from sklearn.pipeline import FeatureUnion, _transform_one
 from sklearn.externals.joblib import Parallel, delayed
 from FlowCytometryTools import FCMeasurement
 
+from bactoml.fcdataset import FCDataSet
+
 class DFLambdaFunction(BaseEstimator, TransformerMixin):
     """Apply a lambda function to a pandas DataFrame. 
     The implementation is compatible with the sk-learn API.
@@ -269,8 +271,13 @@ class SampleWisePipeline(Pipeline):
         """
         try:
             #apply the whole pipeline fit_transform seqentially to all the sample
-            output = pd.concat((super(SampleWisePipeline, self).fit_transform(sample) for sample in X), axis=0, join='outer')
-            output = output.reset_index(drop=True)
+            if isinstance(X, FCDataSet) or isinstance(X, list):
+                output = pd.concat((super(SampleWisePipeline, self).fit_transform(sample) for sample in X), axis=0, join='outer')
+                output = output.reset_index(drop=True)
+            elif isinstance(X, pd.DataFrame):
+                output = pd.concat((super(SampleWisePipeline, self).fit_transform(pd.DataFrame(data=[sample.values], columns=sample.index)) for _, sample in X.iterrows()), axis=0, join='outer')
+                output = output.reset_index(drop=True)
+
         except AttributeError:
             print('One or multiple estimator in the pipeline are not pre-fitted / initialized.')
             raise

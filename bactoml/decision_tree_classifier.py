@@ -75,6 +75,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
     splitting the dataset along the axis of maximal variance. The splits are
     done using the median value so that each split has the same number of 
     sample.
+
     """
 
     def __init__(self, max_depth=3, columns=None, weight_decay=None):
@@ -292,6 +293,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
         Returns:
         --------
+        Number of counts per bin.
 
         """
         self.predict(X)
@@ -321,8 +323,6 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
                     'channel_id':edges with edges an array 
                     containing the edges of the bins along a 
                     particular channel.
-        Returns:
-        --------
         """
 
         #instanciate the histogram transformer

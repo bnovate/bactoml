@@ -1,6 +1,7 @@
 """
 This module implements a class representing a dataset of FCS files.
-The FCDataset is compatible sklearn Pipelines using ..........
+The FCDataset behave like list and is a valid input for pipelines
+defined in df_pipeline module.
 
 """
 import pandas as pd
@@ -60,6 +61,10 @@ def check_FCS_path(p):
 
 class FCDataSet(MutableSequence):
     """Object representing a dataset of FCS files.
+    The object only stores the path of the FCS files, 
+    the correspondin FCMeasurement instance are created
+    when the elements of the list are indexed.
+
     """
 
     def __init__(self, dir_path, sorted=True):
@@ -92,7 +97,7 @@ class FCDataSet(MutableSequence):
         Returns:
         --------
         FCMeasurement instance of the corresponding FCS file in the 
-        list.
+        list at index.
 
         """
         #delegate raising appropriate exception for wrong key type and out of 
@@ -211,99 +216,3 @@ class FCDataSet(MutableSequence):
                             'path' : f.datafile} for f in self]).sort_values(['date_time'])
 
         self.fcs_path = list(df['path'].values)
-
-#---------------------------------------------------------------------------------------------------#
-#---------------------------------------TEST & EXAMPLE----------------------------------------------#
-#---------------------------------------------------------------------------------------------------#
-
-
-if __name__ == '__main__':
-    import numpy as np 
-    import pandas as pd 
-    import matplotlib.pyplot as plt
-
-    import re
-
-    from FlowCytometryTools import PolyGate, ThresholdGate
-    from sklearn.pipeline import Pipeline
-    from sklearn.preprocessing import StandardScaler
-    from itertools import count
-    from pandas.plotting import scatter_matrix
-
-    from df_pipeline import DFLambdaFunction, DFInPlaceLambda,  DFFeatureUnion, SampleWisePipeline
-    from decision_tree_classifier import DTClassifier, HistogramTransform
-    from graph_model import GraphModel
-
-
-    #TCC gate
-    TCC_GATE = PolyGate([[3.7, 0], [3.7, 3.7], [6.5, 6], [6.5, 0]], ['FL1', 'FL2'])
-    
-    #HNA gate
-    HNA_GATE = ThresholdGate(5.1, 'FL1', 'above')
-
-    #FCS dataset
-    fcds = FCDataSet('/home/omartin/internship/fingerprinting2/data/locle')
-    
-    #Histogram edges
-    edges = {'FL1':np.linspace(3.7, 6.5, 3),
-             'FL2':np.linspace(0.05, 6.6, 3),
-             'SSC':np.linspace(0.05, 6.6, 3)}
-
-    #Decision tree with exponentialy weighted moving average
-    dt = DTClassifier(max_depth=2, columns=['FL1', 'FL2', 'SSC'], weight_decay=0.07)
-    dt.initialize_ewma(fcds[0:50], DFLambdaFunction(lambda X : X.transform('tlog', channels=['FL1', 'FL2', 'SSC'], th=1, r=1, d=1, auto_range=False).gate(TCC_GATE)), edges)
-
-    #Pipeline computing VOL
-    vol = Pipeline([('meta vol', DFLambdaFunction(lambda X : float(X.get_meta()['$VOL']) * 1E-6))])
-
-    #Pipeline computing TCC
-    tcc = Pipeline([('event ctr', DFLambdaFunction(lambda X : X.shape[0]))])
-
-    #Pipeline computing HNAC
-    hna = Pipeline([('HNA_gate', DFLambdaFunction(lambda X : X.gate(HNA_GATE))), 
-                    ('event ctr', DFLambdaFunction(lambda X : X.shape[0]))])
-
-    #Pipeline computing the cluster sizes
-    clsize = Pipeline([('histogram', HistogramTransform(edges=edges)),
-                       ('clustering', dt)])
-
-    #Pipeline graph model
-    graph = GraphModel(columns=['CLSIZE_0', 'CLSIZE_1', 'CLSIZE_2', 'CLSIZE_3'], cc_threshold=0.20)
-    p = SampleWisePipeline([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
-                                                                             channels=['FL1', 'FL2', 'SSC'], 
-                                                                             th=1, r=1, d=1, auto_range=False))),
-                            ('TCC_gate', DFLambdaFunction(lambda X : X.gate(TCC_GATE))),
-                            ('funion', DFFeatureUnion([('CLSIZE', clsize)]))])
-    graph.initialize_graph(fcds[0:50], p)
-    graph_model = Pipeline([('graph_model', graph)])
-
-    #pre-preocessing pipeline
-    pp_pipe = SampleWisePipeline([('tlog', DFLambdaFunction(lambda X : X.transform('tlog', 
-                                                                                   channels=['FL1', 'FL2', 'SSC'], 
-                                                                                   th=1, r=1, d=1, auto_range=False))),
-                                  ('TCC_gate', DFLambdaFunction(lambda X : X.gate(TCC_GATE))),
-                                  ('funion1', DFFeatureUnion([('VOL', vol),
-                                                             ('TCC', tcc),
-                                                             ('HNAC', hna),
-                                                             ('CLSIZE', clsize)])),
-                                  ('funion2', DFFeatureUnion([('labels', graph_model), 
-                                                              ('VOL', DFLambdaFunction(lambda X : X['VOL'])),
-                                                              ('TCC', DFLambdaFunction(lambda X : X['TCC'])),
-                                                              ('HNAC', DFLambdaFunction(lambda X : X['HNAC'])),
-                                                              ('CLSIZE', DFLambdaFunction(lambda X : X[['CLSIZE_0', 'CLSIZE_1', 'CLSIZE_2', 'CLSIZE_3']]))]))])
-
-    super_pipe = Pipeline([('preprocessing', pp_pipe), 
-                           ('scaling', DFInPlaceLambda(lambda C, DF : C / DF['VOL'], ['TCC', 'HNAC'])),
-                           ('standardization', DFLambdaFunction(StandardScaler()))])
-
-    output = super_pipe.fit_transform(fcds)
-    print(output.describe())
-
-    for i,f in enumerate(output.columns):
-        y = output[f]
-        y -= y.min()
-        y /= y.max()
-        plt.plot(i * 1.1 + y)
-
-    plt.legend()
-    plt.show() 
