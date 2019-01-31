@@ -1,7 +1,14 @@
 """
-This module implements decision tree classifier used to cluster
-FCS event in cluster of same sizes (approximatively same size 
-in case of histograms).
+The number of event per FCS file is different, however
+for later processing each FCS file should be represented by a fixed
+number of features.
+
+This module implements two scikit-learn compatible transformer
+that cluster FCS events. HistogramTransform cluster the events 
+using a fixed grid while the decision tree classifier DTClassifier 
+clusters the FCS events in cluster of same sizes (approximatively same 
+size in case of histograms) splitting the dataset along the 
+axis of maximal variance around the median.
 
 """
 import numpy as np 
@@ -17,8 +24,10 @@ class HistogramTransform(BaseEstimator, TransformerMixin):
 
     def __init__(self, edges):
         """
+
         Parameters:
         -----------
+
         edges : dct, shape (n_channels, )
                 Dictionary with key:value as follow
                 'channel_id':edges with edges an array 
@@ -35,9 +44,11 @@ class HistogramTransform(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
-        """Create an histogram according to the bins.
+        """Create an histogram according to the given bins.
+
         Parameters:
         -----------
+
         X : FCMeasurement,
             Contains the flow cytometer data.
 
@@ -80,8 +91,10 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
     def __init__(self, max_depth=3, columns=None, weight_decay=None):
         """
+
         Parameters:
         -----------
+
         max_depth : int, defaults to 3.
                     Maximal depth of the recurence
         
@@ -103,6 +116,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
         
         """
+
         self.max_depth = max_depth
         self.columns = columns
         self.weight_decay = weight_decay
@@ -112,12 +126,14 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
         Parameters:
         -----------
+
         X : pandas DataFrame, shape (n_events, n_channels)
             List of (n_channels)-dimensional data points. Each row
             corresponds to a single event.
 
         Returns:
         --------
+
         self : this estimator (to be compatible with sklearn API).
 
         """
@@ -126,6 +142,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
             Parameters:
             -----------
+            
             x : pandas DataFrame, shape (n_events, n_channels)
                 Input data at current node.
 
@@ -148,6 +165,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
                    list of all the branches from initial node to leaf node.
             
             Returns:
+
             tree : see above.
 
             """
@@ -217,12 +235,14 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
         Parameters:
         -----------
+
         X : pandas DataFrame, shape (n_events, n_channels)
             list of (n_channels)-dimensional data points. Each row
             corresponds to a single event.
 
         Returns:
         --------
+
         labels_ : pandas DataFrame containing the cluster index for
                   each event.
         """
@@ -232,6 +252,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
             Parameters:
             -----------
+
             X : pandas DataFrame, shape (n_events, n_channels)
                 list of (n_channels)-dimensional data points. Each row
                 corresponds to a single event.
@@ -243,6 +264,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
             
             Returns:
             --------
+
             labels_cursor : see above.
 
             """
@@ -287,12 +309,14 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
         Parameters:
         -----------
+
         X : pandas DataFrame, shape (n_events, n_channels)
             list of (n_channels)-dimensional data points. Each row
             corresponds to a single event.
 
         Returns:
         --------
+
         Number of counts per bin.
 
         """
@@ -310,6 +334,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
         Parameters:
         -----------
+
             fcms : iterable,
                    Iterable pointing toward FCM files.
 

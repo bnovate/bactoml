@@ -27,8 +27,10 @@ class DFLambdaFunction(BaseEstimator, TransformerMixin):
         """
         Parameters:
         -----------
+
         func : lambda function,
                Takes a single pandas DataFrame instance as input.
+
         copy : boolean,
                Determine if the transform returns a copy of
                the pandas DataFrame instance or the instance itself.
@@ -38,14 +40,17 @@ class DFLambdaFunction(BaseEstimator, TransformerMixin):
         self.copy = copy
 
     def fit(self, X, y=None):
-        """
+        """Fit all the transformers unsing X.
+
         Parameters:
         -----------
+
         X : pandas DataFrame instance.
             Input data.
 
         Returns:
         --------
+
         self : DFLambdaFunction.
                This estimator.
 
@@ -61,11 +66,13 @@ class DFLambdaFunction(BaseEstimator, TransformerMixin):
         """
         Parameters:
         -----------
+
         X : pandas DataFrame instance.
             Input data.
 
         Returns:
         --------
+
         pandas Dataframe instance.
         Result of the call of self.func on the pandas 
         DataFrame instance X.
@@ -102,10 +109,12 @@ class DFInPlaceLambda(BaseEstimator, TransformerMixin):
         """
         Parameters:
         -----------
+
         func : lambda function,
                Takes two inputs, the pandas DataFrame
                and the colums:
                DFInPlaceLambda(['TCC'], lambda C, DF : C / DF['VOL'])
+
         columns : array of strings,
                   Contains the name of the columns to 
                   which the function func will be 
@@ -116,14 +125,17 @@ class DFInPlaceLambda(BaseEstimator, TransformerMixin):
         self.columns = columns
 
     def fit(self, X, y=None):
-        """
+        """Fit all the transformers unsing X.
+
         Parameters:
         -----------
+
         X : pandas DataFrame instance.
             Input data.
 
         Returns:
         --------
+
         self : DFLambdaFunction.
                This estimator.
 
@@ -131,14 +143,17 @@ class DFInPlaceLambda(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
-        """
+        """Apply the transform to the pandas DataFrame in place.
+
         Parameters:
         -----------
+
         X : pandas DataFrame instance.
             Input data.
 
         Returns:
         --------
+
         pandas Dataframe instance.
         Result of the call of self.func on the columns of 
         the pandas DataFrame instance X.
@@ -160,22 +175,22 @@ class DFFeatureUnion(FeatureUnion):
     Inputs can be FCMeasurement but to be able to concatenate
     the results, the output will be dataframes.
 
-    Note : nesting the DFFeatureUnion doesn't conserve the
-           columns name of the deeper DFFeatureUnion.
+    Note : nesting the DFFeatureUnion doesn't conserve the columns name of the deeper DFFeatureUnion.
 
     """
     
     def transform(self, X):
-        """Transform X separately by each transformer or
-        Pipeline then concatenate the results.
+        """Transform X separately by each transformer or Pipeline then concatenate the results.
 
         Parameters:
         -----------
+
         X : FCMeasurment or pandas DataFrame.
             Input data to be transformed.
 
         Returns:
         --------
+        
         X_t : pandas DataFrame, shape(n_samples, 
               sum_n_components)
               hstack of results of transformers.
@@ -208,6 +223,7 @@ class DFFeatureUnion(FeatureUnion):
 
         Parameters:
         -----------
+
         X : FCMeasurement or pandas DataFrame.
             Input data to be transformed.
 
@@ -216,6 +232,7 @@ class DFFeatureUnion(FeatureUnion):
 
         Returns:
         --------
+
         X_t : pandas DataFrame, shape (n_samples,
               sum_n_components)
               hstack of results of transformers.
@@ -243,6 +260,7 @@ class SampleWisePipeline(Pipeline):
         """
         Parameters:
         -----------
+
         See sklearn.pipeline.Pipeline documentation.
         Note : all the steps must be pre-fitted / initialized.
         
@@ -259,12 +277,14 @@ class SampleWisePipeline(Pipeline):
 
         Parameters:
         -----------
+
         X : iterable,
             Training data. Must fulfill input requirements of first
             step of the pipeline.
         
         Returns:
         --------
+        
         Xt : pandas DataFrame, shape = [n_sample, n_transformed_features]
              Transformed samples.
 

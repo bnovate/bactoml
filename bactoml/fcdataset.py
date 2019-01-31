@@ -21,6 +21,7 @@ class MissingPathError(Exception):
         """
         Parameters:
         -----------
+
         path : string, Path object
                Path that raised the exception.
 
@@ -35,14 +36,15 @@ class MissingPathError(Exception):
 def check_FCS_path(p):
     """Check that p is a string or Path instance
     and that it points to an existing FCS file.
-
     Parameters:
     -----------
+
     p : string / Path object
         Path to check.
 
     Returns:
     --------
+
     Returns p as a Path instance if it points to an
     existing FCS file. Raises a _MissingFCS exception if
     the FCS file doesn't exist.
@@ -71,6 +73,7 @@ class FCDataSet(MutableSequence):
         """
         Parameters:
         -----------
+
         dir_path : string,
                    Path of the directory containing all
                    the FCS files.
@@ -91,11 +94,13 @@ class FCDataSet(MutableSequence):
         """
         Parameters:
         -----------
+
         index : integer,
                 Index of the FCS file in the file list.
 
         Returns:
         --------
+        
         FCMeasurement instance of the corresponding FCS file in the 
         list at index.
 
@@ -118,6 +123,7 @@ class FCDataSet(MutableSequence):
         """
         Parameters:
         -----------
+
         index : integer,
                 Index of the FCS file in the file list.
         value : string/Path instance
@@ -162,6 +168,7 @@ class FCDataSet(MutableSequence):
         """
         Parameters:
         -----------
+
         index : integer,
                 Index of the FCS file in the file list.
 
@@ -176,6 +183,7 @@ class FCDataSet(MutableSequence):
         """
         Returns:
         --------
+
         Number of FCS files in the list.
 
         """
@@ -186,9 +194,9 @@ class FCDataSet(MutableSequence):
         """Insert value just before index in the FCS list.
         Parameters:
         -----------
+
         index : integer,
                 Position in the list.
-        
         value : string / Path object or FCMeasurement,
                 FCS path to insert in the list.
 
@@ -211,6 +219,7 @@ class FCDataSet(MutableSequence):
 
     def sort_date_time(self):
         """Sort the FCS path by ascending date-time.
+
         """
         df = pd.DataFrame([{'date_time' : datetime.datetime.strptime("{$DATE} {$BTIM}".format(**f.get_meta()), "%d-%b-%Y %H:%M:%S"),
                             'path' : f.datafile} for f in self]).sort_values(['date_time'])

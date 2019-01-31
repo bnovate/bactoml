@@ -6,14 +6,17 @@
 Welcome to BactoML's documentation!
 ===================================
 
+This library provides efficient solutions to load, manage and process large FCS dataset.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
    loading
-   preprocessing
-   fingerprinting
-   api
+   pipeline
+   dimension_reduction
+   graph_model
+   artificial_data
 
 
 

@@ -32,12 +32,16 @@ class GraphModel(BaseEstimator, TransformerMixin):
     
     def __init__(self, columns, cc_threshold=0.2, distance_func=distance.euclidean):
         """
+
         Parameters:
         -----------
+
         columns : list of string or regular expression
                   selects the columns / features used for the distance measurement
+
         cc_threshold : float,
                        Closeness centrality threshold to determine outlier
+
         distance_func : function,
                         Function that takes two samples and returns a 
                         distance measure. 
@@ -48,14 +52,17 @@ class GraphModel(BaseEstimator, TransformerMixin):
         self.distance_func = distance_func
 
     def fit(self, X, y=None):
-        """
+        """No parameters to estimate.
+
         Parameters:
         -----------
+
         X : pandas DataFrame,
             Contains the features extracted from one FCMeasurement.
 
         Returns:
         --------
+
         self : GraphModel,
                This instance.
 
@@ -63,14 +70,15 @@ class GraphModel(BaseEstimator, TransformerMixin):
         return self
 
     def initialize_graph(self, X, pp_pipe):
-        """Initialize the graph model.
-        Initialize the graph and coordinate and outlier queues.
+        """Initialize the graph and coordinate and outlier queues.
         
         Parameters:
         -----------
+
         X : pandas DataFrame,
             Contains the features from the samples used to initialize
             the graph model.
+
         pp_pipe : pipeline,
                   Pre-processing pipeline used to generate the features
                   from FCMeasurement instances.
@@ -90,14 +98,17 @@ class GraphModel(BaseEstimator, TransformerMixin):
 
             Parameters:
             -----------
+
             row : pandas DataFrame,
                   Row of a pandas dataframe representing the current sample.
+
             df : pandas DataFrame,
                  Contains all the sample for which the distance to the current
                  sample (row) is computed.
 
             Returns:
             --------
+
             mean_distance : float,
                             mean distance between the current sample and all the
                             samples in the dataset.
@@ -135,14 +146,19 @@ class GraphModel(BaseEstimator, TransformerMixin):
 
 
     def transform(self, X, y=None):
-        """
+        """Apply the graph model algorithm for outlier detection to the 
+        preprocessed dataset and return for each node the closeness 
+        centrality computed at the time of the node creation.
+
         Parameters:
         -----------
+
         X : pandas DataFrame,
             Contains the features extracted from one FCMeasurement.
 
         Returns:
         --------
+        
         out : pandas DataFrame,
               Contains -1 for outlier, 1 for inliner.
 

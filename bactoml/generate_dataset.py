@@ -1,3 +1,8 @@
+"""This module implements two solution for artificial dataset generation. Both
+of them use multiple datasets of reference and a given mixing coefficient profile
+to generate artificially contaminated dataset by spiking the sources together.
+"""
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -30,7 +35,7 @@ class SpikingPoissonModel():
     such that V = V_A + V_B = 0.9 mL, the standard volume of a measurement,
     follows a Poisson law of rate V_A/V l_A + V_B/V l_B.
 
-    (*) we loose the patterns variation seen in some periodic sources. 
+    (*) we loose whole histogram pattern variations seen in some periodic sources. 
 
     """
 
@@ -38,6 +43,7 @@ class SpikingPoissonModel():
         """
         Parameters:
         -----------
+
         datasets : list of strings,
                    Path of the directories containing all
                    the FCS files used as reference.
@@ -93,10 +99,12 @@ class SpikingPoissonModel():
 
         Parameters:
         -----------
+        
         mixing_coeff : 1D array containing the mixing coefficients.
 
         Returns:
         --------
+
         (i, sample) : generator returning artificial samples and their 
                       index i.
 
@@ -120,11 +128,13 @@ class SpikingPoissonModel():
 
         Parameters:
         -----------
+
         profile : 2D array, (N_steps, N_sources).
                   For each step of the profile contains the mixing coefficient.
 
         Returns:
         --------
+
         (i, sample) : generator returning artificial samples and their index i.
 
         """
@@ -146,11 +156,13 @@ class SpikingPoissonModel():
 
         Parameters:
         -----------
+        
         profile : 2D array, (N_steps, N_sources).
                   For each step of the profile contains the mixing coefficient.
 
         Returns:
         --------
+
         (i, sample) : generator returning artificial samples and their index i.
 
         """
@@ -173,6 +185,7 @@ class SpikingEventModel():
         """
         Parameters:
         -----------
+
         directories : list of strings,
                       Path of the directories containing all
                       the FCS files used as reference.
@@ -215,10 +228,12 @@ class SpikingEventModel():
 
         Parameters:
         -----------
+
         mixing_coeff : 1D array containing the mixing coefficients.
 
         Returns:
         --------
+
         (i, sample) : generator returning artificial samples and their 
                       index i.
 
@@ -251,11 +266,13 @@ class SpikingEventModel():
 
         Parameters:
         -----------
+
         profile : 2D array, (N_steps, N_sources).
                   For each step of the profile contains the mixing coefficient.
 
         Returns:
         --------
+
         (i, sample) : generator returning artificial samples and their 
                       index i.
 
@@ -289,11 +306,13 @@ class SpikingEventModel():
 
         Parameters:
         -----------
+
         profile : 2D array, (N_steps, N_sources).
                   For each step of the profile contains the mixing coefficient.
 
         Returns:
         --------
+
         (i, sample) : generator returning artificial samples and their index i.
 
         """
