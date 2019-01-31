@@ -13,7 +13,7 @@ sk-learn compatible Pipeline making it easy to create complex branched processin
 pipeline for your datasets.
 
 It also implements a graph based algorithm for detection of outlier FCS files as well 
-as solutions to generate artificial dataset by mixing reference datasets. 
+as solutions to generate artificial dataset by mixing reference datasets.
 
 .. toctree::
    :maxdepth: 2
