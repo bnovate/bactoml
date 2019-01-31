@@ -3,7 +3,7 @@ This module implements the graph model for outlier detection.
 
 Each FCS file corresponds to a node of the graph and has features
 attributed: 
- - its features ('coordinates in space'), the features extracted by the pipeline
+ - its features ('coordinates in space'), the features extracted by the pipeline, here number of counts in each bin of the decision tree classifier
  - the mean distance between itself and the rest of the nodes
  - its closeness centrality in the graph
  - its label, -1 for outlier and 1 for inliner
