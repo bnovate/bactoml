@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import os
+
 
 from time import sleep
 from FlowCytometryTools import PolyGate, FCMeasurement
@@ -14,11 +16,10 @@ from bactoml.decision_tree_classifier import HistogramTransform
 TCC_GATE = PolyGate([[3.7, 0], [3.7, 3.7], [6.5, 6], [6.5, 0]], ['FL1', 'FL2'])
 
 #load the datasets
-dir1 = "/home/omartin/internship/bactoml/bactoml/testdata/locle/20170531-125801 Cte8 31_05_2017 wac 30%" 
-dir2 = "/home/omartin/internship/bactoml/bactoml/testdata/locle/20170601-005801 Cte8 31_05_2017 wac 30%"
-
-dir1 = "/home/omartin/internship/fingerprinting2/data/zurich"
-dir2 = "/home/omartin/internship/fingerprinting2/data/locle"
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+DATADIR = os.path.join(BASEDIR, os.path.pardir, 'testdata')
+dir1 = os.path.join(DATADIR, "locle")
+dir2 = os.path.join(DATADIR, "zurich")
 
 #Histogram edges
 n_fl1 = 41
