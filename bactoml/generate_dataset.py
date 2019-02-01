@@ -178,6 +178,10 @@ class SpikingPoissonModel():
 
 class SpikingEventModel():
     """Generate artificial dataset by spiking multiple datasets together.
+    
+    Select a random number of FCS files in the dataset and for each 
+    select a subset of events. The number of events selected for each
+    dataset is deteminded by the mixing coefficients.
 
     """
 
