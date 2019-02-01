@@ -25,8 +25,6 @@ as solutions to generate artificial dataset by mixing reference datasets.
    graph_model
    artificial_data
 
-
-
 Indices and tables
 ==================
 
