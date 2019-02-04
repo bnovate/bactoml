@@ -15,6 +15,15 @@ This python package contains all of our custom machine learning tools. They are 
 
 ## Getting started
 
+Create a virtual environment. I recommend using conda to ensure you have the correct python version:
+
+```
+conda create --name bactoml python=3.6 --no-default-packages
+conda activate bactoml
+```
+
+**Note**: You must run the last line (`conda activate bactoml`) every time you open a new shell to work on this package!
+
 Install the package with:
 
 ```
@@ -22,9 +31,11 @@ pip install -r requirements.txt
 python setup.py install
 ```
 
+[We use pip inside of conda, because we can't get all packages through conda, so it's easier to use only pip]
+
 Then work through the examples in the `examples/` folder.
 
-For developers: I recommend working in a virtual environment or Anaconda environment. Install the library in development mode in your virtualenv:
+For developers: again I recommend working in a virtual environment or Anaconda environment. Install the library in development mode in your virtualenv:
 
 ```
 pip install -r requirements-test.txt
