@@ -84,7 +84,7 @@ class FCDataSet(MutableSequence):
         else:
             raise MissingPathError(dir_path)
 
-        self.fcs_path = list(self.dir_path.glob('**/*.fcs'))
+        self.fcs_path = list(self.dir_path.glob('**/*events.fcs'))
 
         if sorted:
             self.sort_date_time()
