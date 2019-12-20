@@ -69,7 +69,7 @@ class FCDataSet(MutableSequence):
 
     """
 
-    def __init__(self, dir_path, sorted=True):
+    def __init__(self, dir_path, sorted=True, pattern = '*events'):
         """
         Parameters:
         -----------
@@ -77,6 +77,7 @@ class FCDataSet(MutableSequence):
         dir_path : string,
                    Path of the directory containing all
                    the FCS files.
+        pattern: string, extension of fcs files 
 
         """
         if Path(dir_path).exists():
@@ -84,7 +85,7 @@ class FCDataSet(MutableSequence):
         else:
             raise MissingPathError(dir_path)
 
-        self.fcs_path = list(self.dir_path.glob('**/*events.fcs'))
+        self.fcs_path = list(self.dir_path.glob('**/' + pattern + '.fcs'))
 
         if sorted:
             self.sort_date_time()
