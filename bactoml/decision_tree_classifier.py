@@ -54,7 +54,7 @@ class HistogramTransform(BaseEstimator, TransformerMixin):
 
         """
         #extract the volume from the meta data
-        V = float(X.get_meta()['$VOL'])
+        #V = float(X.get_meta()['$VOL'])
 
         #extract only the colums of interest
         X_ = X[list(self.edges.keys())]
@@ -76,7 +76,8 @@ class HistogramTransform(BaseEstimator, TransformerMixin):
         for (c, name) in enumerate(X_.columns):
             hist[name] = np.array(list(map(lambda e: [e] * nb_repeat[c], centers[c])) * nb_copies[c]).flatten()
 
-        hist['counts'] = np.array(H).flatten() * (9E+4 / V)
+        #hist['counts'] = np.array(H).flatten() * (9E+4 / V)
+        hist['counts'] = np.array(H).flatten()
                  
         return hist
 
