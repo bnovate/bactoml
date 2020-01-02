@@ -16,6 +16,7 @@ from sklearn.externals.joblib import Parallel, delayed
 from FlowCytometryTools import FCMeasurement
 
 from bactoml.fcdataset import FCDataSet
+from bactoml.decision_tree_classifier import HistogramTransform
 
 class DFLambdaFunction(BaseEstimator, TransformerMixin):
     """Apply a lambda function to a pandas DataFrame. 
@@ -178,7 +179,8 @@ class DFFeatureUnion(FeatureUnion):
     Note : nesting the DFFeatureUnion doesn't conserve the columns name of the deeper DFFeatureUnion.
 
     """
-    
+
+
     def transform(self, X):
         """Transform X separately by each transformer or Pipeline then concatenate the results.
 
@@ -245,11 +247,11 @@ class DFFeatureUnion(FeatureUnion):
 class SampleWisePipeline(Pipeline):
     """Apply the whole pipeline to each sample sequentially.
 
-    At each steps Sklearn Pipeline apply the fit/transform
-    function to the whole dataset. This object apply all the
+    At each steps Sklearn Pipeline applies the fit/transform
+    function to the whole dataset. This object applies all the
     steps to each sample before moving to the next one. This
-    is usefull when dealing with prepreocessing steps, when
-    the sample have different dimensions and the pipeline 
+    is useful when dealing with preprocessing steps, when
+    the samples have different dimensions and the pipeline 
     implements a dimensionality reduction / feature selection,
     or when dealing with time series and the order of the 
     sample is important.
@@ -270,7 +272,7 @@ class SampleWisePipeline(Pipeline):
     def fit_transform(self, X, y=None):
         """Fit the model and transform with the final estimator.
 
-        Process the sample seuqentially and for each fits all the 
+        Process the sample sequentially and for each fits all the 
         transforms one after the other and transforms the sample, 
         then uses fit_transform on the transformed data with the
         final estimator.
@@ -290,7 +292,7 @@ class SampleWisePipeline(Pipeline):
 
         """
         try:
-            #apply the whole pipeline fit_transform seqentially to all the sample
+            #apply the whole pipeline fit_transform sequentially to all the sample
             if isinstance(X, FCDataSet) or isinstance(X, list):
                 output = pd.concat((super(SampleWisePipeline, self).fit_transform(sample) for sample in X), axis=0, join='outer')
                 output = output.reset_index(drop=True)
@@ -303,3 +305,43 @@ class SampleWisePipeline(Pipeline):
             raise
 
         return output
+
+
+class AggregatedHist:
+    
+    """Generates an aggregated histogram of all the FCMeasurements."""
+
+    def __init__(self, fcms, pre_pipe, edges):
+        
+        """
+        Parameters:
+        ----------
+
+        fcms: FCDataSet object
+        preprocessing: scikit-learn pipeline object consisting of preprocessing steps 
+                    (e.g. tlog step, gating)
+        edges: edges of the histogram
+        
+        """
+        self.fcms = fcms
+        self.pipe = pre_pipe
+        self.edges = edges
+
+    def aggregate(self):
+
+        """Applies a finely spaced grid to every FCMeasurement and aggregates the resulting 
+        counts into a single histogram.
+        
+        Returns:
+        --------
+        
+        super_hist : aggregated histogram
+
+        """
+        hist = HistogramTransform(self.edges)
+        super_hist = hist.transform(self.pipe.transform(self.fcms[0]))
+
+        for fc in self.fcms[1:]:
+            super_hist['counts'] += hist.transform(self.pipe.transform(fc))['counts']
+
+        return super_hist
