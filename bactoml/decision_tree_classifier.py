@@ -90,7 +90,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
     """
 
-    def __init__(self, max_depth=3, columns=None, weight_decay=None):
+    def __init__(self, max_depth=3, columns=None, normalized = True, weight_decay=None):
         """
 
         Parameters:
@@ -101,6 +101,8 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
         
         columns : list, defaults to None.
                   Apply the clustering along the columns specified only.
+
+        normalized : boolean. Determines whether the final bin count is normalized or not.
 
         weight_decay : float, [0; 1], default to None.
                        If None the decision tree classifier is fit on the
@@ -114,12 +116,12 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
                        Larger weight decay discard contribution of old FCS
                        faster and a weight decay of zero corresponds to a 
                        constant mean histogram fixed to the initialized values.
-
         
         """
 
         self.max_depth = max_depth
         self.columns = columns
+        self.normalized = normalized
         self.weight_decay = weight_decay
 
     def fit(self, X, y=None):
@@ -325,9 +327,17 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
         if 'counts' in list(X.columns):
             df = pd.DataFrame({'counts':X['counts'], 'labels':self.labels_})
-            return np.atleast_1d(df.groupby(by='labels').sum().values.squeeze())
+            output = np.atleast_1d(df.groupby(by='labels').sum().values.squeeze())
+            if self.normalized:
+                return np.nan_to_num(output / sum(output))
+            else:
+                return output
         else:
-            return np.histogram(self.labels_, len(np.unique(self.labels_)))[0]
+            output = np.histogram(self.labels_, len(np.unique(self.labels_)))[0]
+            if self.normalized:
+                return np.nan_to_num(output / sum(output))
+            else:
+                return output
     
     def initialize_ewma(self, fcms, preprocessing, edges):
         """Initialize the exponentialy weighted moving average histogram
