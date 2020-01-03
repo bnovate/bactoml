@@ -65,7 +65,7 @@ class TestHistogramTransform(object):
         assert res['SSC'].max() <= 6.6
 
         #test that the number of events in the transformed data and ground truth are the same
-        assert res['counts'].sum() == 9E+4 * gt.shape[0] / float(ds.get_meta()['$VOL'])
+        assert res['counts'].sum() == gt.shape[0] 
 
 class TestDecisionTreeClassifier(object):
 
