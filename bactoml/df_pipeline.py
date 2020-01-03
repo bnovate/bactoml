@@ -311,25 +311,30 @@ class AggregatedHist:
     
     """Generates an aggregated histogram of all the FCMeasurements."""
 
-    def __init__(self, fcms, pre_pipe, edges):
+    def __init__(self, fcms, edges, pre_pipe = None):
         
         """
         Parameters:
         ----------
 
         fcms: FCDataSet object
-        preprocessing: scikit-learn pipeline object consisting of preprocessing steps 
-                    (e.g. tlog step, gating)
         edges: dct, shape (n_channels, )
                 Dictionary with key:value as follow
                 'channel_id':edges with edges an array 
                 containing the edges of the bins along a 
                 particular channel.
+        pre_pipe: scikit-learn pipeline object consisting of preprocessing steps 
+                    (e.g. tlog step, gating)
         
         """
         self.fcms = fcms
-        self.pipe = pre_pipe
         self.edges = edges
+
+        if isinstance(pre_pipe, Pipeline):
+            self.preprocessing = True
+            self.pipe = pre_pipe
+        else:
+            self.preprocessing = False
 
     def aggregate(self):
 
@@ -343,9 +348,18 @@ class AggregatedHist:
 
         """
         hist = HistogramTransform(self.edges)
-        super_hist = hist.transform(self.pipe.transform(self.fcms[0]))
+
+        if self.preprocessing:
+            fc_prep = self.pipe.transform(self.fcms[0])
+        else:
+            fc_prep = self.fcms[0]
+        super_hist = hist.transform(fc_prep)
 
         for fc in self.fcms[1:]:
-            super_hist['counts'] += hist.transform(self.pipe.transform(fc))['counts']
+            if self.preprocessing:
+                fc_prep = self.pipe.transform(fc)
+            else:
+                fc_prep = fc
+            super_hist['counts'] += hist.transform(fc_prep)['counts']
 
         return super_hist
