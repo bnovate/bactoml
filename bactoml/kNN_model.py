@@ -71,7 +71,7 @@ class NNDistanceModel(BaseEstimator, TransformerMixin):
         """
 
         output = []
-        for i, row in X[self.columns].iterrows():
+        for _, row in X[self.columns].iterrows():
             distance_, _ = self.neigh.kneighbors([row], self.kN, return_distance = True)
             output.append(distance_[0][0])
 

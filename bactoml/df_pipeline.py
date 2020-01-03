@@ -320,7 +320,11 @@ class AggregatedHist:
         fcms: FCDataSet object
         preprocessing: scikit-learn pipeline object consisting of preprocessing steps 
                     (e.g. tlog step, gating)
-        edges: edges of the histogram
+        edges: dct, shape (n_channels, )
+                Dictionary with key:value as follow
+                'channel_id':edges with edges an array 
+                containing the edges of the bins along a 
+                particular channel.
         
         """
         self.fcms = fcms

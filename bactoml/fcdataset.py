@@ -1,6 +1,6 @@
 """
 This module implements a class representing a dataset of FCS files.
-The FCDataset behave like list and is a valid input for pipelines
+The FCDataset behaves like a list and is a valid input for pipelines
 defined in df_pipeline module.
 
 """
@@ -64,7 +64,7 @@ def check_FCS_path(p):
 class FCDataSet(MutableSequence):
     """Object representing a dataset of FCS files.
     The object only stores the path of the FCS files, 
-    the correspondin FCMeasurement instance are created
+    the corresponding FCMeasurement instances are created
     when the elements of the list are indexed.
 
     """

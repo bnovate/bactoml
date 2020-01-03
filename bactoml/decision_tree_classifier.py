@@ -86,7 +86,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
     """Cluster a dataset in clusters with same cardinality by recursively
     splitting the dataset along the axis of maximal variance. The splits are
     done using the median value so that each split has the same number of 
-    sample.
+    samples.
 
     """
 
@@ -97,10 +97,10 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
         -----------
 
         max_depth : int, defaults to 3.
-                    Maximal depth of the recurence
+                    Maximal depth of the recurrence
         
         columns : list, defaults to None.
-                  Apply the clustering along the columns specified only.
+                  Apply the clustering along the specified columns only.
 
         normalized : boolean. Determines whether the final bin count is normalized or not.
 
