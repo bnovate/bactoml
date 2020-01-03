@@ -1,3 +1,10 @@
+"""
+This module implements a scikit-learn compatible transformer
+that generates the Pheno fingerprint. PhenoIndexes calculates the
+Phenotypic Diversity Indexes as described by Props et al. 2016.
+
+"""
+
 import numpy as np
 import pandas as pd
 import itertools

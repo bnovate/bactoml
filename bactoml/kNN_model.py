@@ -1,3 +1,13 @@
+"""
+This module implements the kNN distance model for outlier detection. 
+The NNDistanceModel is fitted on a reference set representative for
+normal operating conditions. In a transform step an outlier score is
+calculated which is the distance to the nearest neighbor (NN) in the
+reference set.
+
+"""
+
+
 import numpy as np
 import pandas as pd
 
@@ -9,7 +19,7 @@ class NNDistanceModel(BaseEstimator, TransformerMixin):
 
     """
     Nearest neighbor distance model which calculates the outlier score. 
-    The outlier score is the distance to the nearest neighbour.
+    The outlier score is the distance to the nearest neighbor.
     """
     
     def __init__(self, columns, distance_func=distance.euclidean, n_neighbors = 1):
