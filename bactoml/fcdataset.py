@@ -69,7 +69,7 @@ class FCDataSet(MutableSequence):
 
     """
 
-    def __init__(self, dir_path, sorted=True, pattern = '*events'):
+    def __init__(self, dir_path, sorted=True, timeformat = "%d-%b-%Y %H:%M:%S", pattern = '*events'):
         """
         Parameters:
         -----------
@@ -77,7 +77,7 @@ class FCDataSet(MutableSequence):
         dir_path : string,
                    Path of the directory containing all
                    the FCS files.
-        pattern: string, extension of fcs files 
+        pattern: Unix filename pattern 
 
         """
         if Path(dir_path).exists():
@@ -88,7 +88,9 @@ class FCDataSet(MutableSequence):
         self.fcs_path = list(self.dir_path.glob('**/' + pattern + '.fcs'))
 
         if sorted:
+            self.timeformat = timeformat
             self.sort_date_time()
+            
 
 
     def __getitem__(self, index):
@@ -222,7 +224,7 @@ class FCDataSet(MutableSequence):
         """Sort the FCS path by ascending date-time.
 
         """
-        df = pd.DataFrame([{'date_time' : datetime.datetime.strptime("{$DATE} {$BTIM}".format(**f.get_meta()), "%d-%b-%Y %H:%M:%S"),
+        df = pd.DataFrame([{'date_time' : datetime.datetime.strptime("{$DATE} {$BTIM}".format(**f.get_meta()), self.timeformat),
                             'path' : f.datafile} for f in self]).sort_values(['date_time'])
 
         self.fcs_path = list(df['path'].values)
