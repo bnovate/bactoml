@@ -90,7 +90,7 @@ class DTClassifier(BaseEstimator, TransformerMixin, ClusterMixin):
 
     """
 
-    def __init__(self, max_depth=3, columns=None, normalized = True, weight_decay=None):
+    def __init__(self, max_depth=3, columns=None, normalized = False, weight_decay=None):
         """
 
         Parameters:
