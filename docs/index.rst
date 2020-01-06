@@ -22,6 +22,8 @@ as solutions to generate artificial dataset by mixing reference datasets.
    loading
    pipeline
    dimension_reduction
+   kNN_model
+   pheno_indexes
    graph_model
    artificial_data
 

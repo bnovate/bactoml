@@ -1,4 +1,4 @@
-Dimension reduction
+Probability Binning
 ===================
 
 .. automodule:: bactoml.decision_tree_classifier
