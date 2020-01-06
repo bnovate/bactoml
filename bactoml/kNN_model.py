@@ -1,6 +1,6 @@
 """
 This module implements the kNN distance model for outlier detection. 
-The NNDistanceModel is fitted on a reference set representative for
+The model is fitted on the fingerprints of a reference set representative for
 normal operating conditions. In a transform step an outlier score is
 calculated which is the distance to the nearest neighbor (NN) in the
 reference set.
@@ -30,11 +30,12 @@ class NNDistanceModel(BaseEstimator, TransformerMixin):
         -----------
         columns : list of string or regular expression
                   selects the columns / features used for the distance measurement
-        distance_func: function,
+        distance_func : function,
                         Function that takes two samples and returns a 
                         distance measure. 
-        n_neighbors: number of neighbors to be used in the scikit-learn 
-                    NearestNeighbors model
+        n_neighbors : int, optional
+                     number of neighbors to be used in the scikit-learn 
+                     NearestNeighbors model
         """
         self.columns = columns
         self.distance_func = distance_func
@@ -53,7 +54,8 @@ class NNDistanceModel(BaseEstimator, TransformerMixin):
         Returns:
         --------
 
-        self : this estimator (to be compatible with sklearn API).
+        self 
+                this estimator (to be compatible with sklearn API).
 
 
         """
@@ -64,8 +66,8 @@ class NNDistanceModel(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None):
 
-        """Apply the NN distance model for outlier detection to the 
-        preprocessed dataset and return for each measurement the outlier score
+        """Apply the NN distance model to the online
+        fingerprints and return the outlier score
 
         Parameters:
         -----------
@@ -76,7 +78,8 @@ class NNDistanceModel(BaseEstimator, TransformerMixin):
         Returns:
         --------
         
-        output : pandas DataFrame with the outlier score
+        output 
+                pandas DataFrame with the outlier score
 
         """
 

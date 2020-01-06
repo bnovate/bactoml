@@ -323,7 +323,8 @@ class AggregatedHist:
                 'channel_id':edges with edges an array 
                 containing the edges of the bins along a 
                 particular channel.
-        pre_pipe: scikit-learn pipeline object consisting of preprocessing steps 
+        pre_pipe: Pipeline object
+                scikit-learn pipeline object consisting of preprocessing steps 
                     (e.g. tlog step, gating)
         
         """
@@ -344,7 +345,8 @@ class AggregatedHist:
         Returns:
         --------
         
-        super_hist : aggregated histogram
+        super_hist 
+                    aggregated histogram
 
         """
         hist = HistogramTransform(self.edges)

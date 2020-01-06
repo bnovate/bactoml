@@ -22,12 +22,18 @@ class PhenoIndexes(BaseEstimator, TransformerMixin):
         Parameters:
         -----------
 
-        edges_pheno: dictionary with the values on which the density is sampled in each channel.
-        columns: columns on which the indexes are calculated. They have to be the same than the keys in the edges dictionary. 
-        d: decimal rounding factor. Default value = 4.
-        bw: bandwidth of the fitted Kernel density. 
-        downsampling: boolean. Determines if downsampling is performed or not.
-        downsample_perc: float in the interval [0, 1]. Percentage of the datapoints to be retained."""
+        edges_pheno :  dct
+                    dictionary with the values on which the density is sampled in each channel.
+        columns: list, optional
+                columns on which the indexes are calculated. They have to be the same than the keys in the edges dictionary. 
+        d: int
+            decimal rounding factor
+        bw: float
+            bandwidth of the fitted Kernel density. 
+        downsampling: bool, optional
+                        Determines if downsampling is performed or not.
+        downsample_perc: float, optional
+                        float in the interval [0, 1]. Percentage of the datapoints to be retained."""
 
         self.edges_pheno = edges_pheno
         self.columns = list(self.edges_pheno.keys())
@@ -53,7 +59,8 @@ class PhenoIndexes(BaseEstimator, TransformerMixin):
         Returns:
         --------
 
-        self :  This instance.
+        self 
+                This instance.
 
         """
         return self
@@ -73,7 +80,8 @@ class PhenoIndexes(BaseEstimator, TransformerMixin):
          Returns:
         --------
 
-        output : numpy array with phenotypic diversity indexes D0, D1 and D2
+        output : numpy array 
+                 phenotypic diversity indexes D0, D1 and D2
 
         """   
         

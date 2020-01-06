@@ -77,7 +77,8 @@ class FCDataSet(MutableSequence):
         dir_path : string,
                    Path of the directory containing all
                    the FCS files.
-        pattern: Unix filename pattern 
+        pattern 
+                Unix filename pattern 
 
         """
         if Path(dir_path).exists():
