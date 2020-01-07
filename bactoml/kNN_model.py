@@ -86,6 +86,6 @@ class NNDistanceModel(BaseEstimator, TransformerMixin):
         output = []
         for _, row in X[self.columns].iterrows():
             distance_, _ = self.neigh.kneighbors([row], self.kN, return_distance = True)
-            output.append(distance_[0][0])
+            output.append(np.average(distance_[0]))
 
         return pd.DataFrame(output, columns=['outlier_score'], index = X.index)
