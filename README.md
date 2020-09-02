@@ -12,6 +12,7 @@ This python package contains all of our custom machine learning tools. They are 
 - **Pre-processing**: tlog transforms, gating to remove noise
 - **Fingerprinting**: gating to count cells, probability binning
 - **Estimators**: Chi-square risk score estimator.
+- **Full pipeline**: Microbial Community Change Detection (MCCD) algorithm, see `tutorial/MCCD_pipeline_example.py`
 
 ## Getting started
 
