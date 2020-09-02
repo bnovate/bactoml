@@ -1,11 +1,14 @@
-# BactoML - Bactosense Machine Learning libraries
+# BactoML - Scikit-learn compatible Machine Learning libs for Online Flowcytometry 
 
 * Marie Sadler, Octave Martin, Eliane Roosli, Ilaria Ricchi, Douglas Watson
 * bNovate SA, 2018-2020
 
 ## Overview
 
-This python package contains all of our custom machine learning tools. They are built for maximum interoperability with Scikit-learn, so the APIs should be familiar to most. We provide several modules related to fingerprinting:
+This python package contains all of our custom machine learning tools for online
+flow cytometry. They are built for maximum interoperability with Scikit-learn,
+so the APIs should be familiar to most. We provide several modules related to
+fingerprinting:
 
 - **Data loading**: loading of FCS files
 - **Data generation**: generation of FCS files with artificial contaminations
@@ -15,7 +18,7 @@ This python package contains all of our custom machine learning tools. They are 
 
 ## Getting started
 
-Create a virtual environment. I recommend using conda to ensure you have the correct python version:
+Create a virtual environment. We recommend using conda to ensure you have the correct python version:
 
 ```
 conda create --name bactoml python=3.6 --no-default-packages

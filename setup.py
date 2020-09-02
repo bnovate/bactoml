@@ -25,9 +25,9 @@ if os.path.exists(readme_path):
 
 setup(
     name='BactoML',
-    description="Machine learning libs for the Bactosense project",
+    description="Scikit-learn compatible Machine Learning libs for Online Flowcytometry",
     version='0.1',
-    author='Douglas C. Watson',
+    author='Marie Sadler, Octave Martin, Eliane Roosli, Ilaria Ricchi, Douglas C. Watson',
     author_email='douglas.watson@bnovate.com',
     platforms=['POSIX'],
     packages=['bactoml'],
@@ -37,7 +37,7 @@ setup(
     data_files=[
         # ('/etc/init.d/', ['scripts/whatever']),
     ],
-    license='Proprietary',
+    license='MIT',
     long_description=long_desc,
     install_requires=[
         'numpy',
