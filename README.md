@@ -1,7 +1,7 @@
 # BactoML - Bactosense Machine Learning libraries
 
-* Octave Martin, Eliane Roosli, Ilaria Ricchi, Douglas Watson
-* bNovate SA, 2018
+* Marie Sadler, Octave Martin, Eliane Roosli, Ilaria Ricchi, Douglas Watson
+* bNovate SA, 2018-2020
 
 ## Overview
 
