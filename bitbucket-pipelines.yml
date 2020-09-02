@@ -11,4 +11,5 @@ pipelines:
           # Trick to access other repos
           - pip install -r requirements-test.txt
           - python setup.py install
-          - CI_BUILD=True python test.py
+          - CI_BUILD=True py.test --junitxml='test-reports/test-report.xml' # --cov=bactoml --cov-report 'xml:test-reports/coverage.xml'
+# 
