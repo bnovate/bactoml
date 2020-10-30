@@ -8,6 +8,8 @@ __pycache__
 .vscode
 env/
 .idea
+.DS_store
+*.swp
 
 docs/_build
 
